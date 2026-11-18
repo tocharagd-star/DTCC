@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -77,18 +77,18 @@ button.g:hover:not(:disabled){border-color:var(--acc)}
 <body>
 <header>
  <h1>DOORS TITLE CARD</h1>
- <span>генератор загрузочных экранов для ваших этажей</span>
- <button class="g sm" id="undo" title="Отменить (Ctrl+Z)" style="margin:0">↶ Отменить</button>
- <button class="g sm" id="redo" title="Повторить (Ctrl+Y)" style="margin:0">↷ Повторить</button>
+ <span>title screen generator for your floors</span>
+ <button class="g sm" id="undo" title="Undo (Ctrl+Z)" style="margin:0">↶ Undo</button>
+ <button class="g sm" id="redo" title="Redo (Ctrl+Y)" style="margin:0">↷ Redo</button>
 </header>
 <main>
  <div class="stage">
   <div class="cv" id="dropzone"><canvas id="cv" width="1920" height="1080"></canvas></div>
-  <div class="hint">Подсказка: перетаскивайте текст прямо на превью (прилипает к центру). Можно перетащить картинку на фон. Двойной клик по названию ползунка — сброс.</div>
+  <div class="hint">Tip: drag text on the preview to move it (snaps to center). You can also drop a background image here. Double-click a label to reset.</div>
   <div class="bar">
    <select id="scale" style="width:auto"><option value="1">1920x1080 (1x)</option><option value="2" selected>3840x2160 (2x, 4K)</option><option value="3">5760x3240 (3x)</option></select>
-   <label><input type="checkbox" id="transp"> прозрачный фон (только текст)</label>
-   <button id="exp">Скачать PNG</button><button class="g" id="rst">Сбросить всё</button><span id="msg"></span>
+   <label><input type="checkbox" id="transp"> transparent background (text only)</label>
+   <button id="exp">Download PNG</button><button class="g" id="rst">Reset all</button><span id="msg"></span>
   </div>
  </div>
  <div class="panel" id="panel"></div>
@@ -100,18 +100,18 @@ button.g:hover:not(:disabled){border-color:var(--acc)}
  <div class="cp-mid">
   <div class="cp-prev" id="cp-prev"></div>
   <input type="text" class="cp-hex" id="cp-hex" maxlength="7" spellcheck="false">
-  <button type="button" class="g cp-eye" id="cp-eye" title="Пипетка" hidden>💉</button>
+  <button type="button" class="g cp-eye" id="cp-eye" title="Eyedropper" hidden>💉</button>
  </div>
  <div class="cp-sw" id="cp-pal"></div>
- <div class="cp-lbl">Недавние</div>
+ <div class="cp-lbl">Recent</div>
  <div class="cp-sw" id="cp-rec"></div>
 </div>
 
 <script>
 const W0=1920,H0=1080;
-const FONTS=[["DoorsCyr","Doors (оригинал)"],["Bebas Neue","Bebas Neue"],["Anton","Anton"],["Creepster","Creepster"],["Pirata One","Pirata One"],["Cinzel","Cinzel"],["Special Elite","Special Elite"]];
-const PRESETS={hotel:["#3b1d0f","#0d0604","Отель"],red:["#5a0d0d","#120202","Красный"],night:["#1b2a4a","#05070f","Ночь"],green:["#1d3a2b","#050d09","Зелёный"],gold:["#6b4a16","#140c02","Золото"],black:["#222222","#000000","Чёрный"]};
-const B=(o)=>Object.assign({text:"ТЕКСТ",font:"DoorsCyr",size:100,x:0,y:0,rot:0,sp:0,sx:100,alpha:100,color:"#fbdcb4",sw:0,sc:"#2a1306",glow:0,gc:"#ffb35c",on:true},o);
+const FONTS=[["DoorsCyr","Doors (original)"],["Bebas Neue","Bebas Neue"],["Anton","Anton"],["Creepster","Creepster"],["Pirata One","Pirata One"],["Cinzel","Cinzel"],["Special Elite","Special Elite"]];
+const PRESETS={hotel:["#3b1d0f","#0d0604","Hotel"],red:["#5a0d0d","#120202","Red"],night:["#1b2a4a","#05070f","Night"],green:["#1d3a2b","#050d09","Green"],gold:["#6b4a16","#140c02","Gold"],black:["#222222","#000000","Black"]};
+const B=(o)=>Object.assign({text:"TEXT",font:"DoorsCyr",size:100,x:0,y:0,rot:0,sp:0,sx:100,alpha:100,color:"#fbdcb4",sw:0,sc:"#2a1306",glow:0,gc:"#ffb35c",on:true},o);
 const BASE=()=>({
  blocks:[B({text:"THE",size:160,y:-195,rot:-1}),B({text:"HOTEL",size:340,y:15,rot:-0.5})],
  upper:false,grad:false,color2:"#e98a3c",
@@ -129,11 +129,11 @@ const TPL=[
  ["Minimal",{blocks:[B({text:"FLOOR 3",size:200,y:-20,color:"#ffffff",sp:30}),B({text:"A NEW BEGINNING",size:60,y:150,color:"#aaaaaa",sp:50})],persp:0,perspV:0,pinch:0,lights:false,preset:"black",bgA:"#1a1a1a",bgB:"#000000",vig:40,bright:100}]
 ];
 const WARP_PRESETS=[
- ["DOORS (оригинал)",{persp:-6,perspV:16,pinch:32,arch:0,skew:0,wave:0,rotG:0,stretch:100,stretchY:100,jitter:0,jrot:0}],
- ["Ровный",{persp:0,perspV:0,pinch:0,arch:0,skew:0,wave:0,rotG:0,stretch:100,stretchY:100,jitter:0,jrot:0}],
- ["Арка вверх",{persp:0,perspV:10,pinch:15,arch:-120,skew:0,wave:0}],
- ["Волна",{persp:0,perspV:10,pinch:12,arch:0,wave:26,freq:3,jitter:10,jrot:4}],
- ["Хоррор-перекос",{persp:16,perspV:18,pinch:25,arch:0,skew:35,jitter:10,jrot:4}]
+ ["DOORS (original)",{persp:-6,perspV:16,pinch:32,arch:0,skew:0,wave:0,rotG:0,stretch:100,stretchY:100,jitter:0,jrot:0}],
+ ["Flat",{persp:0,perspV:0,pinch:0,arch:0,skew:0,wave:0,rotG:0,stretch:100,stretchY:100,jitter:0,jrot:0}],
+ ["Arch Up",{persp:0,perspV:10,pinch:15,arch:-120,skew:0,wave:0}],
+ ["Wave",{persp:0,perspV:10,pinch:12,arch:0,wave:26,freq:3,jitter:10,jrot:4}],
+ ["Horror Skew",{persp:16,perspV:18,pinch:25,arch:0,skew:35,jitter:10,jrot:4}]
 ];
 
 let S=BASE(),img=null,fontOK={},sel=1,drag=null;
@@ -334,7 +334,7 @@ let customFonts=[];
 function sec(title,key){const d=document.createElement("details");d.open=!!openState[key];d.ontoggle=()=>{openState[key]=d.open};d.innerHTML=`<summary>${title}</summary>`;P.appendChild(d);return d}
 function sl(par,label,obj,key,min,max,step,def){
  const r=document.createElement("div");r.className="row";
- r.innerHTML=`<label title="Двойной клик — сброс">${label}</label><input type="range" min="${min}" max="${max}" step="${step||1}"><input type="number" class="num" step="${step||1}">`;
+ r.innerHTML=`<label title="Double-click to reset">${label}</label><input type="range" min="${min}" max="${max}" step="${step||1}"><input type="number" class="num" step="${step||1}">`;
  const lb=r.querySelector("label"),i=r.querySelector("input[type=range]"),n=r.querySelector("input.num");
  i.value=obj[key];n.value=obj[key];
  i.oninput=()=>{obj[key]=+i.value;n.value=i.value;draw();snapDeb()};
@@ -355,7 +355,7 @@ function ck(par,label,obj,key){
  const i=r.querySelector("input");i.checked=obj[key];i.onchange=()=>{obj[key]=i.checked;draw();snap()};par.appendChild(r);
 }
 function resetBtn(par,keys,extra){
- const b=document.createElement("button");b.className="g sm";b.textContent="Сбросить этот раздел";
+ const b=document.createElement("button");b.className="g sm";b.textContent="Reset this section";
  b.onclick=()=>{const d=BASE();keys.forEach(k=>S[k]=d[k]);if(extra)extra();buildUI();draw();snap()};par.appendChild(b);
 }
 
@@ -364,15 +364,15 @@ function buildBlocks(box){
  S.blocks.forEach((b,idx)=>{
   const d=document.createElement("div");d.className="blk"+(idx===sel?" sel":"");
   d.innerHTML=`<div class="top">
-   <input type="checkbox" title="Показать / скрыть">
-   <input type="text" placeholder="Текст">
-   <button class="g" data-a="cx" title="По центру X">⌖</button>
-   <button class="g" data-a="up" title="Выше">▲</button>
-   <button class="g" data-a="dn" title="Ниже">▼</button>
-   <button class="g" data-a="dup" title="Дублировать">⧉</button>
-   <button class="g" data-a="del" title="Удалить">✕</button>
+   <input type="checkbox" title="Show / hide">
+   <input type="text" placeholder="Text">
+   <button class="g" data-a="cx" title="Center X">⌖</button>
+   <button class="g" data-a="up" title="Move up">▲</button>
+   <button class="g" data-a="dn" title="Move down">▼</button>
+   <button class="g" data-a="dup" title="Duplicate">⧉</button>
+   <button class="g" data-a="del" title="Delete">✕</button>
   </div>
-  <div class="row c"><label>Шрифт</label><select>${FONTS.map(f=>f[0]).concat(customFonts).map(f=>`<option value="${f}"${f===b.font?" selected":""}>${(FONTS.find(x=>x[0]===f)||[0,f+" (свой)"])[1]}</option>`).join("")}</select></div>`;
+  <div class="row c"><label>Font</label><select>${FONTS.map(f=>f[0]).concat(customFonts).map(f=>`<option value="${f}"${f===b.font?" selected":""}>${(FONTS.find(x=>x[0]===f)||[0,f+" (custom)"])[1]}</option>`).join("")}</select></div>`;
   const vis=d.querySelector('input[type=checkbox]'),tx=d.querySelector('input[type=text]'),se=d.querySelector("select");
   vis.checked=b.on;vis.onchange=()=>{b.on=vis.checked;draw();snap()};
   tx.value=b.text;tx.oninput=()=>{b.text=tx.value;draw();snapDeb()};
@@ -383,17 +383,17 @@ function buildBlocks(box){
   d.querySelector('[data-a=del]').onclick=()=>{S.blocks.splice(idx,1);sel=Math.max(0,Math.min(sel,S.blocks.length-1));buildUI();draw();snap()};
   d.querySelector('[data-a=dup]').onclick=()=>{S.blocks.splice(idx+1,0,{...b,y:b.y+80});sel=idx+1;buildUI();draw();snap()};
   se.onchange=async()=>{await ensureFont(se.value);b.font=se.value;draw();snap()};
-  sl(d,"Размер",b,"size",20,800,1,150);
-  co(d,"Цвет",b,"color");
-  sl(d,"Позиция X",b,"x",-960,960,1,0);
-  sl(d,"Позиция Y",b,"y",-540,540,1,0);
-  sl(d,"Поворот °",b,"rot",-90,90,.5,0);
-  sl(d,"Интервал букв",b,"sp",-100,300,1,0);
-  const m=document.createElement("details");m.innerHTML="<summary style='font-weight:400;color:var(--mut)'>Обводка, свечение, ширина</summary>";
-  sl(m,"Ширина букв %",b,"sx",40,200,1,100);
-  sl(m,"Прозрачность %",b,"alpha",0,100,1,100);
-  sl(m,"Обводка",b,"sw",0,60,1,0);co(m,"Цвет обводки",b,"sc");
-  sl(m,"Свечение",b,"glow",0,200,1,0);co(m,"Цвет свечения",b,"gc");
+  sl(d,"Size",b,"size",20,800,1,150);
+  co(d,"Color",b,"color");
+  sl(d,"Position X",b,"x",-960,960,1,0);
+  sl(d,"Position Y",b,"y",-540,540,1,0);
+  sl(d,"Rotation °",b,"rot",-90,90,.5,0);
+  sl(d,"Letter spacing",b,"sp",-100,300,1,0);
+  const m=document.createElement("details");m.innerHTML="<summary style='font-weight:400;color:var(--mut)'>Outline, glow, width & opacity</summary>";
+  sl(m,"Letter width %",b,"sx",40,200,1,100);
+  sl(m,"Opacity %",b,"alpha",0,100,1,100);
+  sl(m,"Outline",b,"sw",0,60,1,0);co(m,"Outline color",b,"sc");
+  sl(m,"Glow",b,"glow",0,200,1,0);co(m,"Glow color",b,"gc");
   d.appendChild(m);
   box.appendChild(d)});
 }
@@ -403,72 +403,72 @@ function applyTpl(o){
 }
 function buildUI(){
  closeColorPicker();P.innerHTML="";
- // Шаблоны
- const s0=sec("Шаблоны","tpl");const g=document.createElement("div");g.className="tg";
+ // Templates
+ const s0=sec("Templates","tpl");const g=document.createElement("div");g.className="tg";
  const keep=S,keepImg=img;
  TPL.forEach(([name,o])=>{
   const b=document.createElement("button");const c=document.createElement("canvas");c.width=288;c.height=162;
   S=Object.assign(BASE(),JSON.parse(JSON.stringify(o)));img=null;render(c.getContext("2d"),288/W0,false);
   b.appendChild(c);b.insertAdjacentHTML("beforeend",`<span>${name}</span>`);b.onclick=()=>applyTpl(o);g.appendChild(b)});
  S=keep;img=keepImg;s0.appendChild(g);
- // Текст
- const s1=sec("Текст","text");const box=document.createElement("div");s1.appendChild(box);buildBlocks(box);
- const ab=document.createElement("button");ab.className="g sm";ab.textContent="+ Добавить текст";
- ab.onclick=()=>{S.blocks.push(B({text:"НОВЫЙ ТЕКСТ",size:90,y:260}));sel=S.blocks.length-1;buildUI();draw();snap()};s1.appendChild(ab);
- const af=document.createElement("button");af.className="g sm";af.style.marginLeft="6px";af.textContent="Шрифт ко всем";
- af.onclick=()=>{const b=S.blocks[sel]||S.blocks[0];if(!b)return;S.blocks.forEach(x=>x.font=b.font);buildUI();draw();snap();msg("Шрифт применён ко всем строкам")};s1.appendChild(af);
- ck(s1,"ВСЕ ЗАГЛАВНЫЕ",S,"upper");
- const ff=document.createElement("div");ff.className="row c";ff.innerHTML=`<label>Свой шрифт</label><div><input type="file" accept=".ttf,.otf,.woff,.woff2"></div>`;
+ // Text
+ const s1=sec("Text","text");const box=document.createElement("div");s1.appendChild(box);buildBlocks(box);
+ const ab=document.createElement("button");ab.className="g sm";ab.textContent="+ Add text";
+ ab.onclick=()=>{S.blocks.push(B({text:"NEW TEXT",size:90,y:260}));sel=S.blocks.length-1;buildUI();draw();snap()};s1.appendChild(ab);
+ const af=document.createElement("button");af.className="g sm";af.style.marginLeft="6px";af.textContent="Apply font to all";
+ af.onclick=()=>{const b=S.blocks[sel]||S.blocks[0];if(!b)return;S.blocks.forEach(x=>x.font=b.font);buildUI();draw();snap();msg("Font applied to all blocks")};s1.appendChild(af);
+ ck(s1,"UPPERCASE",S,"upper");
+ const ff=document.createElement("div");ff.className="row c";ff.innerHTML=`<label>Custom font</label><div><input type="file" accept=".ttf,.otf,.woff,.woff2"></div>`;
  ff.querySelector("input").onchange=async e=>{
   const f=e.target.files[0];if(!f)return;
   const name="Custom"+customFonts.length;const x=new FontFace(name,await f.arrayBuffer());await x.load();
   document.fonts.add(x);customFonts.push(name);fontOK[name]=1;
   if(S.blocks[sel])S.blocks[sel].font=name;
-  buildUI();draw();snap();msg("Шрифт загружен и выбран");
+  buildUI();draw();snap();msg("Font loaded and selected");
  };
  s1.appendChild(ff);
- // Цвет и тень
- const s2=sec("Градиент и тень","style");
- ck(s2,"Градиент текста",S,"grad");co(s2,"Нижний цвет",S,"color2");
- sl(s2,"Тень %",S,"shA",0,100);sl(s2,"Сдвиг тени X",S,"shX",-80,80);sl(s2,"Сдвиг тени Y",S,"shY",-80,80);sl(s2,"Размытие тени",S,"shB",0,100);co(s2,"Цвет тени",S,"shC");
+ // Style
+ const s2=sec("Color effects and shadow","style");
+ ck(s2,"Vertical gradient",S,"grad");co(s2,"Gradient end color",S,"color2");
+ sl(s2,"Shadow opacity %",S,"shA",0,100);sl(s2,"Shadow X",S,"shX",-80,80);sl(s2,"Shadow Y",S,"shY",-80,80);sl(s2,"Shadow blur",S,"shB",0,100);co(s2,"Shadow color",S,"shC");
  resetBtn(s2,["grad","color2","shA","shX","shY","shB","shC"]);
- // Деформация
- const s3=sec("Деформация","warp");
+ // Warp
+ const s3=sec("Deformation","warp");
  const ch=document.createElement("div");ch.className="chips";
  WARP_PRESETS.forEach(([name,obj])=>{
   const b=document.createElement("button");b.className="g";b.type="button";b.textContent=name;
   b.onclick=()=>{Object.assign(S,obj);buildUI();draw();snap()};ch.appendChild(b);
  });
  s3.appendChild(ch);
- sl(s3,"Трапеция (верх/низ)",S,"perspV",-80,80);
- sl(s3,"Вогнутость / Выпуклость",S,"pinch",-80,100);
- sl(s3,"Перспектива (лево/право)",S,"persp",-80,80);
- sl(s3,"Арка / Изгиб",S,"arch",-250,250);
- sl(s3,"Наклон по диагонали",S,"skew",-300,300);
- sl(s3,"Поворот всего °",S,"rotG",-45,45,.5);
- sl(s3,"Ширина всего %",S,"stretch",40,200);
- sl(s3,"Высота всего %",S,"stretchY",40,200);
- sl(s3,"Высота волны",S,"wave",0,150);sl(s3,"Частота волны",S,"freq",.25,10,.25);sl(s3,"Фаза волны °",S,"phase",0,360);
- sl(s3,"Тряска букв (px)",S,"jitter",0,100);sl(s3,"Наклон букв °",S,"jrot",0,45);sl(s3,"Вариант тряски",S,"seed",1,99);
+ sl(s3,"Trapezoid (top/bot)",S,"perspV",-80,80);
+ sl(s3,"Concave / Bulge",S,"pinch",-80,100);
+ sl(s3,"Perspective (L/R)",S,"persp",-80,80);
+ sl(s3,"Arch / Curve",S,"arch",-250,250);
+ sl(s3,"Skew",S,"skew",-300,300);
+ sl(s3,"Rotate everything °",S,"rotG",-45,45,.5);
+ sl(s3,"Stretch X %",S,"stretch",40,200);
+ sl(s3,"Stretch Y %",S,"stretchY",40,200);
+ sl(s3,"Wave height",S,"wave",0,150);sl(s3,"Wave frequency",S,"freq",.25,10,.25);sl(s3,"Wave phase °",S,"phase",0,360);
+ sl(s3,"Letter shake (px)",S,"jitter",0,100);sl(s3,"Letter tilt °",S,"jrot",0,45);sl(s3,"Shake seed",S,"seed",1,99);
  resetBtn(s3,["wave","freq","phase","skew","arch","persp","perspV","pinch","rotG","stretch","stretchY","jitter","jrot","seed"]);
- // Фон
- const s4=sec("Фон","bg");
- const pr=document.createElement("div");pr.className="row c";pr.innerHTML=`<label>Пресет фона</label><select>${Object.entries(PRESETS).map(([k,v])=>`<option value="${k}"${k===S.preset?" selected":""}>${v[2]}</option>`).join("")}</select>`;
+ // BG
+ const s4=sec("Background","bg");
+ const pr=document.createElement("div");pr.className="row c";pr.innerHTML=`<label>Preset</label><select>${Object.entries(PRESETS).map(([k,v])=>`<option value="${k}"${k===S.preset?" selected":""}>${v[2]}</option>`).join("")}</select>`;
  pr.querySelector("select").onchange=e=>{const p=PRESETS[e.target.value];S.preset=e.target.value;S.bgA=p[0];S.bgB=p[1];buildUI();draw();snap()};s4.appendChild(pr);
- co(s4,"Цвет 1",S,"bgA");co(s4,"Цвет 2",S,"bgB");sl(s4,"Угол градиента °",S,"bgAngle",0,360);ck(s4,"Тёплые огоньки",S,"lights");
- const up=document.createElement("div");up.className="row c";up.innerHTML=`<label>Своя картинка</label><div><input type="file" accept="image/*"></div>`;
+ co(s4,"Color 1",S,"bgA");co(s4,"Color 2",S,"bgB");sl(s4,"Gradient angle °",S,"bgAngle",0,360);ck(s4,"Warm lights",S,"lights");
+ const up=document.createElement("div");up.className="row c";up.innerHTML=`<label>Your image</label><div><input type="file" accept="image/*"></div>`;
  up.querySelector("input").onchange=e=>{const f=e.target.files[0];if(f)loadBgFile(f)};s4.appendChild(up);
- const fr=document.createElement("div");fr.className="row c";fr.innerHTML=`<label>Масштаб фото</label><select><option value="cover">Заполнить</option><option value="contain">Вписать</option><option value="stretch">Растянуть</option></select>`;
+ const fr=document.createElement("div");fr.className="row c";fr.innerHTML=`<label>Image fit</label><select><option value="cover">Fill</option><option value="contain">Fit</option><option value="stretch">Stretch</option></select>`;
  const fs=fr.querySelector("select");fs.value=S.fit;fs.onchange=()=>{S.fit=fs.value;draw();snap()};s4.appendChild(fr);
- sl(s4,"Зум фото %",S,"bgZoom",100,250);
- const rb=document.createElement("button");rb.className="g sm";rb.textContent="Убрать картинку";rb.onclick=()=>{img=null;draw()};s4.appendChild(rb);
- sl(s4,"Размытие фона",S,"blur",0,100);sl(s4,"Яркость %",S,"bright",10,130);sl(s4,"Виньетка %",S,"vig",0,100);
- co(s4,"Оттенок",S,"tint");sl(s4,"Сила оттенка %",S,"tintA",0,80);
+ sl(s4,"Image zoom %",S,"bgZoom",100,250);
+ const rb=document.createElement("button");rb.className="g sm";rb.textContent="Remove image";rb.onclick=()=>{img=null;draw()};s4.appendChild(rb);
+ sl(s4,"Background blur",S,"blur",0,100);sl(s4,"Brightness %",S,"bright",10,130);sl(s4,"Vignette %",S,"vig",0,100);
+ co(s4,"Tint color",S,"tint");sl(s4,"Tint strength %",S,"tintA",0,80);
  resetBtn(s4,["preset","bgA","bgB","bgAngle","lights","fit","bgZoom","blur","bright","vig","tint","tintA"],()=>{img=null});
 }
 
 function loadBgFile(f){
- const im=new Image();im.onload=()=>{img=im;draw();msg("Фон загружен")};im.src=URL.createObjectURL(f);
+ const im=new Image();im.onload=()=>{img=im;draw();msg("Background loaded")};im.src=URL.createObjectURL(f);
 }
 const dz=document.getElementById("dropzone");
 dz.addEventListener("dragover",e=>{e.preventDefault();dz.classList.add("drop")});
@@ -479,7 +479,7 @@ dz.addEventListener("drop",e=>{
 });
 
 function msg(t){const m=document.getElementById("msg");m.textContent=t;clearTimeout(msg.t);msg.t=setTimeout(()=>m.textContent="",5000)}
-document.getElementById("rst").onclick=()=>{S=BASE();img=null;sel=1;buildUI();draw();snap();msg("Сброшено")};
+document.getElementById("rst").onclick=()=>{S=BASE();img=null;sel=1;buildUI();draw();snap();msg("Reset")};
 
 // drag text on preview with center snap
 cv.addEventListener("pointerdown",e=>{
@@ -498,12 +498,12 @@ cv.addEventListener("pointerup",()=>{if(drag){drag=null;buildUI();draw();snap()}
 
 document.getElementById("exp").onclick=async()=>{
  const k=+document.getElementById("scale").value,tr=document.getElementById("transp").checked;
- const c=document.createElement("canvas");msg("Рендер...");await new Promise(r=>setTimeout(r,30));
+ const c=document.createElement("canvas");msg("Rendering...");await new Promise(r=>setTimeout(r,30));
  render(c.getContext("2d"),k,tr);
  const blob=await new Promise(r=>c.toBlob(r,"image/png"));
  const name=`title-${((S.blocks.find(b=>b.on)||{text:"card"}).text.replace(/\W+/g,"_"))||"card"}-${W0*k}x${H0*k}.png`;
- try{const dl=await claude.use("downloads");if(dl){await dl.save({filename:name,data:blob});msg("Готово");return}}catch(e){if(e&&e.code==="declined"){msg("Отменено");return}}
- const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();msg("Готово");
+ try{const dl=await claude.use("downloads");if(dl){await dl.save({filename:name,data:blob});msg("Done");return}}catch(e){if(e&&e.code==="declined"){msg("Cancelled");return}}
+ const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();msg("Done");
 };
 
 buildUI();draw();snap();
