@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Doors Title Card Generator</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Cinzel:wght@700&family=Creepster&family=Pirata+One&family=Special+Elite&display=swap">
+<style>
+@font-face{font-family:"DoorsCyr";src:url("Doors Cyrillic Font.ttf") format("truetype"),local("Doors (RUS by niceclub95)");}
+:root{--bg:#f4efe8;--panel:#fffaf3;--fg:#2a1a10;--mut:#7a6552;--line:#dccfbf;--acc:#b5651d;--acc2:#fff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#150d08;--panel:#21140c;--fg:#f6e3c8;--mut:#a38a70;--line:#3b2819;--acc:#e0913f;--acc2:#1a0f08;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#150d08;--panel:#21140c;--fg:#f6e3c8;--mut:#a38a70;--line:#3b2819;--acc:#e0913f;--acc2:#1a0f08;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px}
+header h1{margin:0;font:400 26px "DoorsCyr",serif;letter-spacing:.04em}
+header span{color:var(--mut);font-size:13px}
+main{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:16px;padding:16px;align-items:start}
+.stage{position:sticky;top:12px}
+.cv{background:#000 repeating-conic-gradient(#2a2a2a 0 25%,#1c1c1c 0 50%) 0 0/20px 20px;border-radius:10px;overflow:hidden;border:1px solid var(--line)}
+canvas{display:block;width:100%;height:auto;touch-action:none;cursor:move}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:4px 12px 12px;max-height:calc(100vh - 90px);overflow:auto}
+details{border-bottom:1px solid var(--line);padding:8px 0}details:last-child{border:0}
+summary{cursor:pointer;font-weight:600;padding:4px 0}
+.row{display:grid;grid-template-columns:110px 1fr 44px;gap:8px;align-items:center;margin:6px 0}
+.row label{color:var(--mut);font-size:12.5px}
+.row output{font-size:12px;text-align:right;color:var(--mut)}
+.row.c{grid-template-columns:110px 1fr}
+input[type=range]{width:100%;accent-color:var(--acc)}
+input[type=text],select{width:100%;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--fg);font:inherit}
+input[type=color]{width:44px;height:28px;border:1px solid var(--line);border-radius:6px;background:none;padding:1px}
+button{background:var(--acc);color:var(--acc2);border:0;border-radius:7px;padding:8px 14px;font:600 13px inherit;cursor:pointer}
+button.g{background:transparent;color:var(--fg);border:1px solid var(--line)}
+.blk{border:1px solid var(--line);border-radius:8px;padding:8px;margin:8px 0}
+.blk .top{display:flex;gap:6px;align-items:center}
+.blk .top input[type=text]{flex:1}
+.tg{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:8px 0}.tg button{padding:0;background:var(--bg);border:2px solid var(--line);border-radius:8px;overflow:hidden;text-align:left;color:var(--fg)}.tg button:hover{border-color:var(--acc)}.tg canvas{cursor:pointer;touch-action:auto}.tg span{display:block;padding:4px 8px;font-size:12px}.sm{font-size:12px;padding:5px 10px;margin-top:6px}.hint{color:var(--mut);font-size:12px;margin:6px 0}
+#msg{color:var(--mut);font-size:12.5px}
+@media(max-width:860px){main{grid-template-columns:1fr}.stage{position:static}.panel{max-height:none}}
+</style>
+</head>
+<body>
+<header><h1>DOORS TITLE CARD</h1><span>title screen generator for your floors</span></header>
+<main>
+ <div class="stage">
+  <div class="cv"><canvas id="cv" width="1920" height="1080"></canvas></div>
+  <div class="hint">Tip: drag the text on the preview to move it.</div>
+  <div class="bar">
+   <select id="scale" style="width:auto"><option value="1">1920x1080 (1x)</option><option value="2" selected>3840x2160 (2x, 4K)</option><option value="3">5760x3240 (3x)</option></select>
+   <label><input type="checkbox" id="transp"> transparent background (text only)</label>
+   <button id="exp">Download PNG</button><button class="g" id="rst">Reset all</button><span id="msg"></span>
+  </div>
+ </div>
+ <div class="panel" id="panel"></div>
+</main>
+<script>
+const W0=1920,H0=1080;
+const FONTS=[["DoorsCyr","Doors (original)"],["Bebas Neue","Bebas Neue"],["Anton","Anton"],["Creepster","Creepster"],["Pirata One","Pirata One"],["Cinzel","Cinzel"],["Special Elite","Special Elite"]];
+const PRESETS={hotel:["#3b1d0f","#0d0604","Hotel"],red:["#5a0d0d","#120202","Red"],night:["#1b2a4a","#05070f","Night"],green:["#1d3a2b","#050d09","Green"],gold:["#6b4a16","#140c02","Gold"],black:["#222222","#000000","Black"]};
+const B=(o)=>Object.assign({text:"TEXT",font:"DoorsCyr",size:100,x:0,y:0,rot:0,sp:0,color:"#fbdcb4",sw:0,sc:"#2a1306",glow:0,gc:"#ffb35c",on:true},o);
+const BASE=()=>({
+ blocks:[B({text:"THE",size:160,y:-195,rot:-1}),B({text:"HOTEL",size:340,y:15,rot:-0.5})],
+ upper:false,grad:false,color2:"#e98a3c",
+ shX:10,shY:14,shB:0,shA:0,shC:"#000000",
+ jitter:0,jrot:0,wave:0,freq:2,phase:0,skew:0,persp:-6,perspV:16,pinch:32,rotG:0,stretch:100,
+ preset:"hotel",bgA:"#3b1d0f",bgB:"#0d0604",lights:true,fit:"cover",blur:14,bright:70,vig:55,tint:"#6b2a10",tintA:0});
+const TPL=[
+ ["The Hotel",{}],
+ ["Library",{blocks:[B({text:"THE",size:130,y:-185,rot:-2,color:"#f3e2b0",sp:20}),B({text:"LIBRARY",size:260,y:0,rot:-1.5,color:"#f3e2b0",sp:10,glow:30,gc:"#ffcf70"}),B({text:"FLOOR 1",size:70,y:230,color:"#c9a45c",sp:40})],preset:"gold",bgA:"#6b4a16",bgB:"#140c02",shA:70,shB:12}],
+ ["The Mines",{blocks:[B({text:"THE",size:140,y:-180,rot:2,color:"#ffc27a"}),B({text:"MINES",size:340,y:10,rot:2,color:"#ffc27a",glow:45,gc:"#ff8a1f"})],preset:"night",bgA:"#2a2f3d",bgB:"#07080c",persp:20,blur:20,tint:"#ff7a1a",tintA:12}],
+ ["Backdoor",{blocks:[B({text:"THE",size:130,y:-170,color:"#ff3b2f"}),B({text:"BACKDOOR",size:250,y:10,color:"#ff3b2f",glow:50,gc:"#ff1a0a"})],preset:"black",bgA:"#222222",bgB:"#000000",lights:false,wave:25,freq:3,jitter:14,jrot:5,vig:80}],
+ ["Horror Red",{blocks:[B({text:"THE",size:150,y:-190,rot:-4,color:"#ff5a48"}),B({text:"HOTEL",size:340,y:10,rot:-3,color:"#ff5a48",sw:8,sc:"#2a0000",glow:60,gc:"#ff0000"})],preset:"red",bgA:"#5a0d0d",bgB:"#120202",jitter:10,jrot:4,skew:30,persp:10}],
+ ["Neon",{blocks:[B({text:"THE",size:130,y:-180,color:"#9ff4ff",glow:40,gc:"#00d0ff"}),B({text:"HOTEL",size:330,y:10,color:"#e8fdff",sw:6,sc:"#00a8d6",glow:70,gc:"#00d0ff"})],preset:"night",bgA:"#1b2a4a",bgB:"#05070f",lights:false,blur:10}],
+ ["Gold Foil",{blocks:[B({text:"THE",size:130,y:-185,color:"#ffe9a6",sp:30}),B({text:"HOTEL",size:330,y:10,color:"#fff1bd",sw:3,sc:"#4a2c00"})],grad:true,color2:"#c27a10",shA:80,shX:8,shY:14,shB:10,preset:"gold",bgA:"#3a2a0a",bgB:"#080501"}],
+ ["Minimal",{blocks:[B({text:"FLOOR 3",size:200,y:-20,color:"#ffffff",sp:30}),B({text:"A NEW BEGINNING",size:60,y:150,color:"#aaaaaa",sp:50})],persp:0,perspV:0,pinch:0,lights:false,preset:"black",bgA:"#1a1a1a",bgB:"#000000",vig:40,bright:100}]
+];
+let S=BASE(),img=null,fontOK={},sel=1;
+const cv=document.getElementById("cv"),ctx=cv.getContext("2d");
+function rnd(i){const x=Math.sin(i*127.1+311.7)*43758.5453;return x-Math.floor(x)}
+async function ensureFont(f){if(fontOK[f])return;try{await document.fonts.load(`100px "${f}"`);}catch(e){}fontOK[f]=1}
+let pend=0;function draw(){if(pend)return;pend=requestAnimationFrame(()=>{pend=0;render(ctx,1,false)})}
+
+function drawBg(c,k,W,H){
+ c.save();
+ if(img){
+  const ir=img.width/img.height,cr=W/H;let w,h;
+  if(S.fit==="cover"){if(ir>cr){h=H;w=h*ir}else{w=W;h=w/ir}}else{if(ir>cr){w=W;h=w/ir}else{h=H;w=h*ir}}
+  const m=S.fit==="cover"?S.blur*k*2:0;
+  c.fillStyle="#000";c.fillRect(0,0,W,H);
+  if(S.blur>0)c.filter=`blur(${S.blur*k}px)`;
+  c.drawImage(img,(W-w)/2-m,(H-h)/2-m,w+m*2,h+m*2);c.filter="none";
+ }else{
+  const g=c.createLinearGradient(0,0,W*.3,H);g.addColorStop(0,S.bgA);g.addColorStop(1,S.bgB);c.fillStyle=g;c.fillRect(0,0,W,H);
+  if(S.lights){
+   c.filter=`blur(${Math.max(S.blur,1)*k*.8}px)`;
+   for(let i=0;i<9;i++){const x=rnd(i+1)*W,y=rnd(i+20)*H*.7,r=(60+rnd(i+40)*140)*k;
+    const rg=c.createRadialGradient(x,y,0,x,y,r);rg.addColorStop(0,"rgba(255,190,110,.55)");rg.addColorStop(1,"rgba(255,190,110,0)");c.fillStyle=rg;c.fillRect(x-r,y-r,r*2,r*2)}
+   c.filter="none";
+  }
+ }
+ const b=S.bright/100;if(b<1){c.fillStyle=`rgba(0,0,0,${1-b})`;c.fillRect(0,0,W,H)}else if(b>1){c.fillStyle=`rgba(255,255,255,${(b-1)*.5})`;c.fillRect(0,0,W,H)}
+ if(S.tintA>0){c.globalAlpha=S.tintA/100;c.fillStyle=S.tint;c.fillRect(0,0,W,H);c.globalAlpha=1}
+ if(S.vig>0){const g=c.createRadialGradient(W/2,H/2,H*.3,W/2,H/2,W*.65);g.addColorStop(0,"rgba(0,0,0,0)");g.addColorStop(1,`rgba(0,0,0,${S.vig/100})`);c.fillStyle=g;c.fillRect(0,0,W,H)}
+ c.restore();
+}
+function layoutChars(c,bl,k,fn){
+ const t=S.upper?bl.text.toUpperCase():bl.text;if(!t)return;
+ const size=bl.size*k;c.font=`${size}px "${bl.font}", serif`;
+ const sp=bl.sp*k,ws=[...t].map(ch=>c.measureText(ch).width);
+ const tot=ws.reduce((a,b)=>a+b,0)+sp*(ws.length-1);
+ c.save();c.translate(W0*k/2+bl.x*k,H0*k/2+bl.y*k);c.rotate(bl.rot*Math.PI/180);
+ let x=-tot/2;
+ [...t].forEach((ch,i)=>{
+  const jx=(rnd(i*3+1)-.5)*S.jitter*k,jy=(rnd(i*3+2)-.5)*S.jitter*k,jr=(rnd(i*3+3)-.5)*S.jrot*Math.PI/180;
+  c.save();c.translate(x+ws[i]/2+jx,jy);c.rotate(jr);fn(ch,size);c.restore();x+=ws[i]+sp});
+ c.restore();
+}
+function paintBlock(c,bl,k){
+ c.textAlign="center";c.textBaseline="middle";c.lineJoin="round";
+ if(bl.glow>0){layoutChars(c,bl,k,(ch)=>{c.shadowColor=bl.gc;c.shadowBlur=bl.glow*k;c.fillStyle=bl.gc;c.fillText(ch,0,0);c.fillText(ch,0,0)});c.shadowBlur=0;c.shadowColor="transparent"}
+ if(S.shA>0)layoutChars(c,bl,k,(ch)=>{c.save();c.globalAlpha=S.shA/100;c.shadowColor=S.shC;c.shadowBlur=S.shB*k;c.shadowOffsetX=S.shX*k;c.shadowOffsetY=S.shY*k;c.fillStyle=S.shC;c.fillText(ch,0,0);c.restore()});
+ if(bl.sw>0)layoutChars(c,bl,k,(ch)=>{c.strokeStyle=bl.sc;c.lineWidth=bl.sw*2*k;c.strokeText(ch,0,0)});
+ layoutChars(c,bl,k,(ch,sz)=>{let f=bl.color;if(S.grad){const g=c.createLinearGradient(0,-sz*.4,0,sz*.4);g.addColorStop(0,bl.color);g.addColorStop(1,S.color2);f=g}c.fillStyle=f;c.fillText(ch,0,0)});
+}
+const layer=document.createElement("canvas"),layer2=document.createElement("canvas");
+function render(c,k,transparent){
+ const W=W0*k,H=H0*k;
+ if(c.canvas.width!==W){c.canvas.width=W;c.canvas.height=H}
+ c.clearRect(0,0,W,H);
+ if(!transparent)drawBg(c,k,W,H);
+ layer.width=W;layer.height=H;const L=layer.getContext("2d");
+ S.blocks.forEach(b=>{if(b.on)paintBlock(L,b,k)});
+ const step=Math.max(2,Math.round(2*k));
+ let src=layer;
+ if(S.perspV){
+  layer2.width=W;layer2.height=H;const L2=layer2.getContext("2d");
+  for(let y=0;y<H;y+=step){
+   const sh=Math.min(step,H-y),v=(y+sh/2-H/2)/(H/2),sx=Math.max(.1,1+S.perspV/100*v);
+   L2.drawImage(layer,0,y,W,sh,W/2-W*sx/2,y,W*sx,sh)}
+  src=layer2;
+ }
+ c.save();
+ c.translate(W/2,H/2);c.rotate(S.rotG*Math.PI/180);c.scale(S.stretch/100,1);c.translate(-W/2,-H/2);
+ if(!S.wave&&!S.skew&&!S.persp&&!S.pinch)c.drawImage(src,0,0);
+ else for(let x=0;x<W;x+=step){
+  const u=(x+step/2-W/2)/(W/2),sy=Math.max(.1,1+S.persp/100*u+S.pinch/100*u*u);
+  const dy=S.wave*k*Math.sin((x/W)*S.freq*Math.PI*2+S.phase*Math.PI/180)+S.skew*k*u;
+  c.drawImage(src,x,0,step+1,H,x,H/2-H*sy/2+dy,step+1,H*sy)}
+ c.restore();
+}
+
+// ---------- UI ----------
+const P=document.getElementById("panel"),openState={tpl:true,text:true};
+let customFonts=[];
+function sec(title,key){const d=document.createElement("details");d.open=!!openState[key];d.ontoggle=()=>{openState[key]=d.open};d.innerHTML=`<summary>${title}</summary>`;P.appendChild(d);return d}
+function sl(par,label,obj,key,min,max,step){
+ const r=document.createElement("div");r.className="row";
+ r.innerHTML=`<label>${label}</label><input type="range" min="${min}" max="${max}" step="${step||1}"><output></output>`;
+ const i=r.querySelector("input"),o=r.querySelector("output");i.value=obj[key];o.textContent=obj[key];
+ i.oninput=()=>{obj[key]=+i.value;o.textContent=i.value;draw()};
+ o.title="Double-click to type a value";o.ondblclick=()=>{const v=prompt(label,obj[key]);if(v!==null&&!isNaN(+v)){obj[key]=+v;i.value=+v;o.textContent=+v;draw()}};
+ par.appendChild(r)}
+function co(par,label,obj,key){const r=document.createElement("div");r.className="row c";r.innerHTML=`<label>${label}</label><div><input type="color"></div>`;const i=r.querySelector("input");i.value=obj[key];i.oninput=()=>{obj[key]=i.value;draw()};par.appendChild(r);return i}
+function ck(par,label,obj,key){const r=document.createElement("div");r.className="row c";r.innerHTML=`<label>${label}</label><div><input type="checkbox"></div>`;const i=r.querySelector("input");i.checked=obj[key];i.onchange=()=>{obj[key]=i.checked;draw()};par.appendChild(r)}
+function resetBtn(par,keys,extra){const b=document.createElement("button");b.className="g sm";b.textContent="Reset this section";b.onclick=()=>{const d=BASE();keys.forEach(k=>S[k]=d[k]);if(extra)extra();buildUI();draw()};par.appendChild(b)}
+
+function buildBlocks(box){
+ box.innerHTML="";
+ S.blocks.forEach((b,idx)=>{
+  const d=document.createElement("div");d.className="blk";
+  d.innerHTML=`<div class="top"><input type="checkbox" title="Show / hide"><input type="text" placeholder="Text"><button class="g sm" data-a="dup" title="Duplicate">⧉</button><button class="g sm" data-a="del" title="Delete">✕</button></div>
+  <div class="row c"><label>Font</label><select>${FONTS.map(f=>f[0]).concat(customFonts).map(f=>`<option value="${f}"${f===b.font?" selected":""}>${(FONTS.find(x=>x[0]===f)||[0,f+" (custom)"])[1]}</option>`).join("")}</select></div>`;
+  const vis=d.querySelector('input[type=checkbox]'),tx=d.querySelector('input[type=text]'),se=d.querySelector("select");
+  vis.checked=b.on;vis.onchange=()=>{b.on=vis.checked;draw()};
+  tx.value=b.text;tx.oninput=()=>{b.text=tx.value;draw()};tx.onfocus=()=>{sel=idx};
+  d.querySelector('[data-a=del]').onclick=()=>{S.blocks.splice(idx,1);buildUI();draw()};
+  d.querySelector('[data-a=dup]').onclick=()=>{S.blocks.splice(idx+1,0,{...b,y:b.y+80});buildUI();draw()};
+  se.onchange=async()=>{await ensureFont(se.value);b.font=se.value;draw()};
+  sl(d,"Size",b,"size",20,800);sl(d,"Position X",b,"x",-960,960);sl(d,"Position Y",b,"y",-540,540);sl(d,"Rotation",b,"rot",-90,90,.5);sl(d,"Letter spacing",b,"sp",-100,300);co(d,"Color",b,"color");
+  const m=document.createElement("details");m.innerHTML="<summary style='font-weight:400;color:var(--mut)'>Outline and glow for this text</summary>";
+  sl(m,"Outline",b,"sw",0,60);co(m,"Outline color",b,"sc");sl(m,"Glow",b,"glow",0,200);co(m,"Glow color",b,"gc");d.appendChild(m);
+  box.appendChild(d)});
+}
+function applyTpl(o){
+ S=Object.assign(BASE(),JSON.parse(JSON.stringify(o)));
+ return Promise.all(S.blocks.map(b=>ensureFont(b.font))).then(()=>{buildUI();draw()});
+}
+function buildUI(){
+ P.innerHTML="";
+ // Templates
+ const s0=sec("Templates","tpl");const g=document.createElement("div");g.className="tg";
+ const keep=S,keepImg=img;
+ TPL.forEach(([name,o])=>{
+  const b=document.createElement("button");const c=document.createElement("canvas");c.width=288;c.height=162;
+  S=Object.assign(BASE(),JSON.parse(JSON.stringify(o)));img=null;render(c.getContext("2d"),288/W0,false);
+  b.appendChild(c);b.insertAdjacentHTML("beforeend",`<span>${name}</span>`);b.onclick=()=>applyTpl(o);g.appendChild(b)});
+ S=keep;img=keepImg;s0.appendChild(g);
+ // Text
+ const s1=sec("Text","text");const box=document.createElement("div");s1.appendChild(box);buildBlocks(box);
+ const ab=document.createElement("button");ab.className="g sm";ab.textContent="+ Add text (top or bottom)";
+ ab.onclick=()=>{S.blocks.push(B({text:"NEW TEXT",size:90,y:260}));buildUI();draw()};s1.appendChild(ab);
+ ck(s1,"UPPERCASE",S,"upper");
+ const ff=document.createElement("div");ff.className="row c";ff.innerHTML=`<label>Custom font</label><div><input type="file" accept=".ttf,.otf,.woff,.woff2"></div>`;
+ ff.querySelector("input").onchange=async e=>{const f=e.target.files[0];if(!f)return;const name="Custom"+customFonts.length;const x=new FontFace(name,await f.arrayBuffer());await x.load();document.fonts.add(x);customFonts.push(name);fontOK[name]=1;buildUI();msg("Font loaded - pick it in a text font list")};
+ s1.appendChild(ff);
+ // Style
+ const s2=sec("Color effects and shadow","style");
+ ck(s2,"Vertical gradient",S,"grad");co(s2,"Gradient end color",S,"color2");
+ sl(s2,"Shadow opacity %",S,"shA",0,100);sl(s2,"Shadow X",S,"shX",-80,80);sl(s2,"Shadow Y",S,"shY",-80,80);sl(s2,"Shadow blur",S,"shB",0,100);co(s2,"Shadow color",S,"shC");
+ resetBtn(s2,["grad","color2","shA","shX","shY","shB","shC"]);
+ // Warp
+ const s3=sec("Deformation","warp");
+ sl(s3,"Wave height",S,"wave",0,150);sl(s3,"Wave frequency",S,"freq",.25,10,.25);sl(s3,"Wave phase",S,"phase",0,360);
+ sl(s3,"Skew",S,"skew",-300,300);sl(s3,"Perspective %",S,"persp",-80,80);sl(s3,"Perspective V %",S,"perspV",-80,80);sl(s3,"Concave %",S,"pinch",-80,100);
+ sl(s3,"Rotate everything",S,"rotG",-45,45,.5);sl(s3,"Stretch X %",S,"stretch",40,200);
+ sl(s3,"Letter shake (px)",S,"jitter",0,100);sl(s3,"Letter tilt",S,"jrot",0,45);
+ resetBtn(s3,["wave","freq","phase","skew","persp","perspV","pinch","rotG","stretch","jitter","jrot"]);
+ // BG
+ const s4=sec("Background","bg");
+ const pr=document.createElement("div");pr.className="row c";pr.innerHTML=`<label>Preset</label><select>${Object.entries(PRESETS).map(([k,v])=>`<option value="${k}"${k===S.preset?" selected":""}>${v[2]}</option>`).join("")}</select>`;
+ pr.querySelector("select").onchange=e=>{const p=PRESETS[e.target.value];S.preset=e.target.value;S.bgA=p[0];S.bgB=p[1];buildUI();draw()};s4.appendChild(pr);
+ co(s4,"Color 1",S,"bgA");co(s4,"Color 2",S,"bgB");ck(s4,"Warm lights",S,"lights");
+ const up=document.createElement("div");up.className="row c";up.innerHTML=`<label>Your image</label><div><input type="file" accept="image/*"></div>`;
+ up.querySelector("input").onchange=e=>{const f=e.target.files[0];if(!f)return;const im=new Image();im.onload=()=>{img=im;draw()};im.src=URL.createObjectURL(f)};s4.appendChild(up);
+ const fr=document.createElement("div");fr.className="row c";fr.innerHTML=`<label>Image fit</label><select><option value="cover">Fill</option><option value="contain">Fit</option></select>`;
+ const fs=fr.querySelector("select");fs.value=S.fit;fs.onchange=()=>{S.fit=fs.value;draw()};s4.appendChild(fr);
+ const rb=document.createElement("button");rb.className="g sm";rb.textContent="Remove image";rb.onclick=()=>{img=null;draw()};s4.appendChild(rb);
+ sl(s4,"Background blur",S,"blur",0,100);sl(s4,"Brightness %",S,"bright",10,130);sl(s4,"Vignette %",S,"vig",0,100);
+ co(s4,"Tint color",S,"tint");sl(s4,"Tint strength %",S,"tintA",0,80);
+ resetBtn(s4,["preset","bgA","bgB","lights","fit","blur","bright","vig","tint","tintA"],()=>{img=null});
+}
+function msg(t){const m=document.getElementById("msg");m.textContent=t;clearTimeout(msg.t);msg.t=setTimeout(()=>m.textContent="",5000)}
+document.getElementById("rst").onclick=()=>{S=BASE();img=null;buildUI();draw();msg("Reset")};
+// drag text on preview
+let drag=null;
+cv.addEventListener("pointerdown",e=>{
+ const r=cv.getBoundingClientRect(),px=(e.clientX-r.left)/r.width*W0-W0/2,py=(e.clientY-r.top)/r.height*H0-H0/2;
+ let best=-1,bd=1e9;S.blocks.forEach((b,i)=>{if(!b.on)return;const d=Math.hypot(px-b.x,(py-b.y)*1.5);if(d<bd){bd=d;best=i}});
+ if(best<0)return;drag={i:best,dx:px-S.blocks[best].x,dy:py-S.blocks[best].y,r};cv.setPointerCapture(e.pointerId)});
+cv.addEventListener("pointermove",e=>{if(!drag)return;const r=drag.r,b=S.blocks[drag.i];
+ b.x=Math.round((e.clientX-r.left)/r.width*W0-W0/2-drag.dx);b.y=Math.round((e.clientY-r.top)/r.height*H0-H0/2-drag.dy);draw()});
+cv.addEventListener("pointerup",()=>{if(drag){drag=null;buildUI()}});
+document.getElementById("exp").onclick=async()=>{
+ const k=+document.getElementById("scale").value,tr=document.getElementById("transp").checked;
+ const c=document.createElement("canvas");msg("Rendering...");await new Promise(r=>setTimeout(r,30));
+ render(c.getContext("2d"),k,tr);
+ const blob=await new Promise(r=>c.toBlob(r,"image/png"));
+ const name=`title-${((S.blocks.find(b=>b.on)||{text:"card"}).text.replace(/\W+/g,"_"))||"card"}-${W0*k}x${H0*k}.png`;
+ try{const dl=await claude.use("downloads");if(dl){await dl.save({filename:name,data:blob});msg("Done");return}}catch(e){if(e&&e.code==="declined"){msg("Cancelled");return}}
+ const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();msg("Done");
+};
+buildUI();draw();
+ensureFont("DoorsCyr").then(()=>{buildUI();draw()});
+Promise.all(FONTS.map(f=>ensureFont(f[0]))).then(()=>{buildUI();draw()});
+document.fonts.ready.then(()=>{buildUI();draw()});
+</script>
+</body>
+</html>
