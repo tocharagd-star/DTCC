@@ -7,91 +7,147 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Cinzel:wght@700&family=Creepster&family=Pirata+One&family=Special+Elite&display=swap">
 <style>
 @font-face{font-family:"DoorsCyr";src:url("Doors Cyrillic Font.ttf") format("truetype"),local("Doors (RUS by niceclub95)");}
-:root{--bg:#f4efe8;--panel:#fffaf3;--fg:#2a1a10;--mut:#7a6552;--line:#dccfbf;--acc:#b5651d;--acc2:#fff;--card:#fbf5ec;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+:root{--bg:#f4efe8;--panel:#fffaf3;--fg:#2a1a10;--mut:#7a6552;--line:#dccfbf;--acc:#b5651d;--acc2:#fff;--card:#fbf5ec;color-scheme:light}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#150d08;--panel:#21140c;--fg:#f6e3c8;--mut:#a38a70;--line:#3b2819;--acc:#e0913f;--acc2:#1a0f08;--card:#1a1009;color-scheme:dark}}
 :root[data-theme="dark"]{--bg:#150d08;--panel:#21140c;--fg:#f6e3c8;--mut:#a38a70;--line:#3b2819;--acc:#e0913f;--acc2:#1a0f08;--card:#1a1009;color-scheme:dark}
-html{scroll-padding-top:env(safe-area-inset-top,0px)}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-header{padding:12px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-header h1{margin:0;font:400 26px "DoorsCyr",serif;letter-spacing:.04em}
-header span{color:var(--mut);font-size:13px;margin-right:auto}
-main{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:16px;padding:16px;align-items:start}
-.stage{position:sticky;top:12px}
-.cv{position:relative;background:#000 repeating-conic-gradient(#2a2a2a 0 25%,#1c1c1c 0 50%) 0 0/20px 20px;border-radius:10px;overflow:hidden;border:1px solid var(--line);transition:border-color .15s}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font:14px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+body{display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+header{padding:10px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px;flex:none;background:var(--panel)}
+header h1{margin:0;font:400 24px/1 "DoorsCyr",serif;letter-spacing:.04em}
+header .sub{color:var(--mut);font-size:12.5px;margin-right:auto}
+header .hacts{display:flex;gap:6px;align-items:center;margin-left:auto}
+main{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 410px;gap:14px;padding:14px;align-items:start}
+.stage{position:sticky;top:14px;display:flex;flex-direction:column;gap:8px}
+.cv{position:relative;display:flex;justify-content:center;align-items:center;background:#000 repeating-conic-gradient(#2a2a2a 0 25%,#1c1c1c 0 50%) 0 0/20px 20px;border-radius:10px;overflow:hidden;border:1px solid var(--line);transition:border-color .15s}
 .cv.drop{border-color:var(--acc);box-shadow:0 0 0 2px var(--acc)}
 canvas{display:block;width:100%;height:auto;touch-action:none;cursor:move}
-.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
-.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:4px 12px 12px;max-height:calc(100vh - 86px);overflow:auto}
-details{border-bottom:1px solid var(--line);padding:8px 0}details:last-child{border:0}
-summary{cursor:pointer;font-weight:600;padding:4px 0;user-select:none}
-.row{display:grid;grid-template-columns:125px 1fr 56px;gap:8px;align-items:center;margin:6px 0}
+.hint{color:var(--mut);font-size:12px}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.bar label{display:inline-flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;user-select:none}
+#msg{color:var(--acc);font-size:12.5px;font-weight:500}
+
+/* Panel & Tabs */
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;display:flex;flex-direction:column;max-height:calc(100vh - 82px);overflow:hidden}
+.tabs{display:flex;gap:2px;padding:6px;border-bottom:1px solid var(--line);background:var(--card);flex:none;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{flex:1;min-width:max-content;padding:7px 10px;border-radius:7px;background:transparent;color:var(--mut);font-size:12.5px;font-weight:600;border:1px solid transparent}
+.tabs button.on{background:var(--panel);color:var(--fg);border-color:var(--line);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.tabbody{flex:1;min-height:0;overflow-y:auto;padding:10px 12px 16px;-webkit-overflow-scrolling:touch}
+.tabpane[hidden]{display:none}
+
+/* Controls */
+.row{display:grid;grid-template-columns:120px 1fr 56px;gap:8px;align-items:center;margin:8px 0}
 .row label{color:var(--mut);font-size:12.5px;user-select:none;cursor:help}
-.row.c{grid-template-columns:125px 1fr}
-input[type=range]{width:100%;accent-color:var(--acc);cursor:pointer}
-input[type=text],input[type=number],select{width:100%;padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--fg);font:inherit}
-input[type=number].num{padding:3px 5px;font-size:12px;text-align:right;-moz-appearance:textfield}
+.row.c{grid-template-columns:120px 1fr}
+input[type=range]{width:100%;height:24px;margin:0;accent-color:var(--acc);cursor:pointer}
+input[type=text],input[type=number],select{width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:7px;background:var(--bg);color:var(--fg);font:inherit;min-height:34px}
+input[type=number].num{padding:4px 6px;font-size:12.5px;text-align:right;min-height:30px;-moz-appearance:textfield}
 input[type=number].num::-webkit-inner-spin-button,input[type=number].num::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
-button{background:var(--acc);color:var(--acc2);border:0;border-radius:7px;padding:8px 14px;font:600 13px inherit;cursor:pointer}
-button:disabled{opacity:.4;cursor:default}
+input[type=checkbox]{width:16px;height:16px;accent-color:var(--acc);cursor:pointer}
+button{background:var(--acc);color:var(--acc2);border:0;border-radius:8px;padding:8px 13px;font:600 13px inherit;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:5px}
+button:disabled{opacity:.38;cursor:default}
 button.g{background:transparent;color:var(--fg);border:1px solid var(--line)}
 button.g:hover:not(:disabled){border-color:var(--acc)}
-.blk{border:1px solid var(--line);background:var(--card);border-radius:9px;padding:8px;margin:8px 0;transition:border-color .15s}
-.blk.sel{border-color:var(--acc)}
-.blk .top{display:flex;gap:4px;align-items:center;margin-bottom:6px}
-.blk .top input[type=text]{flex:1;min-width:0;font-weight:600}
-.blk .top button{padding:5px 7px;font-size:12px;line-height:1}
-.tg{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:8px 0}
-.tg .titem{position:relative}
-.tg button.tcard{width:100%;padding:0;background:var(--bg);border:2px solid var(--line);border-radius:8px;overflow:hidden;text-align:left;color:var(--fg);display:block}
-.tg button.tcard:hover{border-color:var(--acc)}.tg canvas{cursor:pointer;touch-action:auto}.tg span{display:block;padding:4px 8px;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.tg button.tdel{position:absolute;top:4px;right:4px;padding:2px 6px;font-size:11px;background:rgba(0,0,0,.72);color:#fff;border-radius:5px}
-.tg button.tdel:hover{background:#c22}
-.chips{display:flex;flex-wrap:wrap;gap:5px;margin:6px 0 10px}
-.chips button{padding:4px 9px;font-size:12px;border-radius:6px}
-.sm{font-size:12px;padding:5px 10px;margin-top:6px}
-.hint{color:var(--mut);font-size:12px;margin:6px 0}
-#msg{color:var(--mut);font-size:12.5px}
+button.on{background:var(--acc);color:var(--acc2);border-color:var(--acc)}
+.sm{font-size:12px;padding:6px 10px}
+.sep{height:1px;background:var(--line);margin:10px 0}
 
-/* Custom Color Picker */
-.cbtn{display:inline-flex;align-items:center;gap:8px;padding:4px 9px 4px 5px;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:7px;font:12px/1 monospace;cursor:pointer}
+/* Text block pills & editor */
+.bbar{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.bpill{display:inline-flex;align-items:center;gap:5px;padding:5px 9px;border-radius:8px;background:var(--card);border:1px solid var(--line);color:var(--fg);font-size:12.5px;font-weight:600;cursor:pointer}
+.bpill.sel{border-color:var(--acc);background:var(--acc);color:var(--acc2)}
+.bpill.off{opacity:.5}
+.bcard{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px}
+.btop{display:flex;gap:6px;align-items:center;margin-bottom:8px}
+.btop input[type=text]{flex:1;min-width:0;font-weight:700;font-size:15px}
+.bacts{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px}
+.bacts button{padding:5px 9px;font-size:12px}
+
+/* Visual font chips */
+.fgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:5px;margin:6px 0 8px}
+.fgrid button{padding:7px 8px;font-size:14px;font-weight:400;justify-content:flex-start;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:var(--bg);color:var(--fg);border:1px solid var(--line)}
+.fgrid button.on{border-color:var(--acc);box-shadow:inset 0 0 0 1px var(--acc);background:var(--panel)}
+
+/* Quick swatches + Color picker */
+.cwrap{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.cbtn{display:inline-flex;align-items:center;gap:7px;padding:4px 9px 4px 5px;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:7px;font:12px/1 monospace;cursor:pointer;min-height:30px}
 .cbtn:hover{border-color:var(--acc)}
-.cbtn i{width:22px;height:18px;border-radius:4px;border:1px solid rgba(128,128,128,.35);display:block;flex:none}
-.cp-pop{position:fixed;z-index:999;width:248px;background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:10px;box-shadow:0 12px 32px rgba(0,0,0,.45)}
+.cbtn i{width:20px;height:18px;border-radius:4px;border:1px solid rgba(128,128,128,.35);display:block;flex:none}
+.qsw{display:inline-flex;gap:4px;align-items:center}
+.qsw button{width:20px;height:20px;padding:0;border-radius:50%;border:1px solid rgba(128,128,128,.4)}
+.qsw button:hover{transform:scale(1.12)}
+
+/* Templates & Presets */
+.tg{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:6px 0}
+.titem{position:relative}
+.tcard{width:100%;padding:0;background:var(--bg);border:2px solid var(--line);border-radius:8px;overflow:hidden;text-align:left;color:var(--fg);display:block}
+.tcard:hover{border-color:var(--acc)}
+.tcard canvas{cursor:pointer;touch-action:auto;width:100%;height:auto}
+.tcard span{display:block;padding:5px 8px;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tdel{position:absolute;top:4px;right:4px;padding:2px 6px;font-size:11px;background:rgba(0,0,0,.75);color:#fff;border-radius:5px}
+.tdel:hover{background:#c22}
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin:4px 0 8px}
+.chips button{padding:5px 10px;font-size:12px;border-radius:7px}
+
+/* Color Popover */
+.cp-bg{position:fixed;inset:0;z-index:998;background:rgba(0,0,0,.4)}
+.cp-bg[hidden]{display:none}
+.cp-pop{position:fixed;z-index:999;width:254px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:11px;box-shadow:0 14px 36px rgba(0,0,0,.48)}
 .cp-pop[hidden]{display:none}
-.cp-sv{position:relative;width:100%;height:142px;border-radius:7px;cursor:crosshair;touch-action:none;overflow:hidden;border:1px solid rgba(128,128,128,.3)}
+.cp-sv{position:relative;width:100%;height:146px;border-radius:8px;cursor:crosshair;touch-action:none;overflow:hidden;border:1px solid rgba(128,128,128,.3)}
 .cp-sv::before{content:"";position:absolute;inset:0;background:linear-gradient(to right,#fff,transparent)}
 .cp-sv::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,#000,transparent)}
-.cp-dot{position:absolute;width:12px;height:12px;border:2px solid #fff;border-radius:50%;box-shadow:0 0 0 1px #000,0 1px 4px rgba(0,0,0,.6);transform:translate(-50%,-50%);pointer-events:none;z-index:2}
-.cp-hue{position:relative;width:100%;height:14px;margin:10px 0;border-radius:99px;cursor:pointer;touch-action:none;background:linear-gradient(to right,#f00 0%,#ff0 17%,#0f0 33%,#0ff 50%,#00f 67%,#f0f 83%,#f00 100%);border:1px solid rgba(128,128,128,.3)}
-.cp-hthumb{position:absolute;top:50%;width:14px;height:14px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 2px #000;transform:translate(-50%,-50%);pointer-events:none}
+.cp-dot{position:absolute;width:14px;height:14px;border:2px solid #fff;border-radius:50%;box-shadow:0 0 0 1px #000,0 1px 4px rgba(0,0,0,.6);transform:translate(-50%,-50%);pointer-events:none;z-index:2}
+.cp-hue{position:relative;width:100%;height:16px;margin:10px 0;border-radius:99px;cursor:pointer;touch-action:none;background:linear-gradient(to right,#f00 0%,#ff0 17%,#0f0 33%,#0ff 50%,#00f 67%,#f0f 83%,#f00 100%);border:1px solid rgba(128,128,128,.3)}
+.cp-hthumb{position:absolute;top:50%;width:16px;height:16px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 2px #000;transform:translate(-50%,-50%);pointer-events:none}
 .cp-mid{display:flex;gap:6px;align-items:center;margin-bottom:8px}
-.cp-prev{width:28px;height:28px;border-radius:6px;border:1px solid rgba(128,128,128,.35);flex:none}
-.cp-hex{font:12.5px monospace!important;text-transform:uppercase}
-.cp-eye{padding:5px 8px;font-size:12px}
+.cp-prev{width:30px;height:30px;border-radius:7px;border:1px solid rgba(128,128,128,.35);flex:none}
+.cp-hex{font:13px monospace!important;text-transform:uppercase;min-height:30px!important;padding:4px 8px!important}
+.cp-eye{padding:6px 9px;font-size:12px}
 .cp-sw{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;margin-top:6px}
-.cp-sw button{padding:0;height:20px;border-radius:4px;border:1px solid rgba(128,128,128,.35)}
-.cp-sw button:hover{transform:scale(1.1);border-color:var(--fg)}
-.cp-lbl{font-size:11px;color:var(--mut);margin-top:6px}
+.cp-sw button{padding:0;height:24px;border-radius:5px;border:1px solid rgba(128,128,128,.35)}
+.cp-sw button:hover{transform:scale(1.08);border-color:var(--fg)}
+.cp-lbl{font-size:11px;color:var(--mut);margin-top:7px}
 
-@media(max-width:900px){main{grid-template-columns:1fr}.stage{position:static}.panel{max-height:none}}
+.mob-only{display:none}
+@media(max-width:900px){
+ body{overflow:hidden;height:100dvh}
+ header{padding:8px 12px}
+ header h1{font-size:20px}
+ header .sub,.hint,.stage .bar{display:none}
+ .mob-only{display:inline-flex}
+ main{display:flex;flex-direction:column;padding:8px;gap:8px;overflow:hidden}
+ .stage{position:static;flex:none;gap:4px}
+ .cv{border-radius:9px}
+ canvas{max-height:33dvh;width:auto;max-width:100%;aspect-ratio:16/9}
+ .panel{flex:1;min-height:0;max-height:none;border-radius:10px}
+ .row{grid-template-columns:108px 1fr 54px}
+ .row.c{grid-template-columns:108px 1fr}
+}
+@media(max-width:600px){
+ .cp-pop{left:50%!important;top:50%!important;transform:translate(-50%,-50%);width:min(300px,calc(100vw - 24px))}
+}
 </style>
 </head>
 <body>
 <header>
  <h1>DOORS TITLE CARD</h1>
- <span>title screen generator for your floors</span>
- <button class="g sm" id="undo" title="Undo (Ctrl+Z)" style="margin:0">↶ Undo</button>
- <button class="g sm" id="redo" title="Redo (Ctrl+Y)" style="margin:0">↷ Redo</button>
- <button class="g sm" id="theme" title="Toggle light / dark theme" style="margin:0">☾</button>
+ <span class="sub">title screen generator</span>
+ <div class="hacts">
+  <button class="g sm" id="undo" title="Undo (Ctrl+Z)" style="margin:0">↶</button>
+  <button class="g sm" id="redo" title="Redo (Ctrl+Y)" style="margin:0">↷</button>
+  <button class="g sm" id="theme" title="Toggle theme" style="margin:0">☾</button>
+  <button class="sm mob-only" id="mob-exp" style="margin:0">⬇ PNG</button>
+ </div>
 </header>
 <main>
  <div class="stage">
   <div class="cv" id="dropzone"><canvas id="cv" width="1920" height="1080"></canvas></div>
-  <div class="hint">Tip: drag text to move (snaps to center), arrow keys to nudge (Shift = 10px), double-click text to edit. Drop or Ctrl+V an image for background.</div>
+  <div class="hint">Drag text to move (snaps to center), arrows to nudge (Shift = 10px), double-click text to edit. Drop or Ctrl+V an image for background, Alt+drag to pan image.</div>
   <div class="bar">
    <select id="scale" style="width:auto"><option value="1">1920x1080 (1x)</option><option value="2" selected>3840x2160 (2x, 4K)</option><option value="3">5760x3240 (3x)</option></select>
-   <label><input type="checkbox" id="transp"> transparent background</label>
+   <label><input type="checkbox" id="transp"> transparent</label>
    <label><input type="checkbox" id="guides"> guides</label>
    <button id="exp">Download PNG</button>
    <button class="g" id="cpy">Copy PNG</button>
@@ -99,9 +155,13 @@ button.g:hover:not(:disabled){border-color:var(--acc)}
    <span id="msg"></span>
   </div>
  </div>
- <div class="panel" id="panel"></div>
+ <div class="panel" id="panel">
+  <div class="tabs" id="tabs"></div>
+  <div class="tabbody" id="tabbody"></div>
+ </div>
 </main>
 
+<div id="cp-bg" class="cp-bg" hidden></div>
 <div id="cp-pop" class="cp-pop" hidden>
  <div class="cp-sv" id="cp-sv"><div class="cp-dot" id="cp-dot"></div></div>
  <div class="cp-hue" id="cp-hue"><div class="cp-hthumb" id="cp-hthumb"></div></div>
@@ -117,7 +177,7 @@ button.g:hover:not(:disabled){border-color:var(--acc)}
 
 <script>
 const W0=1920,H0=1080;
-const FONTS=[["DoorsCyr","Doors (original)"],["Bebas Neue","Bebas Neue"],["Anton","Anton"],["Creepster","Creepster"],["Pirata One","Pirata One"],["Cinzel","Cinzel"],["Special Elite","Special Elite"]];
+const FONTS=[["DoorsCyr","Doors"],["Bebas Neue","Bebas Neue"],["Anton","Anton"],["Creepster","Creepster"],["Pirata One","Pirata One"],["Cinzel","Cinzel"],["Special Elite","Special Elite"]];
 const PRESETS={hotel:["#3b1d0f","#0d0604","Hotel"],red:["#5a0d0d","#120202","Red"],night:["#1b2a4a","#05070f","Night"],green:["#1d3a2b","#050d09","Green"],gold:["#6b4a16","#140c02","Gold"],black:["#222222","#000000","Black"]};
 const B=(o)=>Object.assign({text:"TEXT",font:"DoorsCyr",size:100,x:0,y:0,rot:0,sp:0,sx:100,alpha:100,color:"#fbdcb4",sw:0,sc:"#2a1306",glow:0,gc:"#ffb35c",on:true},o);
 const BASE=()=>({
@@ -137,28 +197,24 @@ const TPL=[
  ["Minimal",{blocks:[B({text:"FLOOR 3",size:200,y:-20,color:"#ffffff",sp:30}),B({text:"A NEW BEGINNING",size:60,y:150,color:"#aaaaaa",sp:50})],persp:0,perspV:0,pinch:0,lights:false,preset:"black",bgA:"#1a1a1a",bgB:"#000000",vig:40,bright:100}]
 ];
 const WARP_PRESETS=[
- ["DOORS (original)",{persp:-6,perspV:16,pinch:32,arch:0,skew:0,wave:0,rotG:0,stretch:100,stretchY:100,jitter:0,jrot:0}],
+ ["DOORS",{persp:-6,perspV:16,pinch:32,arch:0,skew:0,wave:0,rotG:0,stretch:100,stretchY:100,jitter:0,jrot:0}],
  ["Flat",{persp:0,perspV:0,pinch:0,arch:0,skew:0,wave:0,rotG:0,stretch:100,stretchY:100,jitter:0,jrot:0}],
  ["Arch Up",{persp:0,perspV:10,pinch:15,arch:-120,skew:0,wave:0}],
  ["Wave",{persp:0,perspV:10,pinch:12,arch:0,wave:26,freq:3,jitter:10,jrot:4}],
- ["Horror Skew",{persp:16,perspV:18,pinch:25,arch:0,skew:35,jitter:10,jrot:4}]
+ ["Horror",{persp:16,perspV:18,pinch:25,arch:0,skew:35,jitter:10,jrot:4}]
 ];
+const QUICK_COLS=["#fbdcb4","#ffe9a6","#ff5a48","#9ff4ff","#ffffff"];
 
 // ---------- Storage ----------
 const lsGet=(k,def)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):def}catch(e){return def}};
 const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 function loadState(){
  const saved=lsGet("doors_tc_state_v1",null);
- if(saved&&Array.isArray(saved.blocks)){
-  const s=Object.assign(BASE(),saved);
-  s.blocks=s.blocks.map(b=>B(b));
-  return s;
- }
+ if(saved&&Array.isArray(saved.blocks)){const s=Object.assign(BASE(),saved);s.blocks=s.blocks.map(b=>B(b));return s}
  return BASE();
 }
 let customTpls=lsGet("doors_tc_tpls_v1",[]);
-
-let S=loadState(),img=null,fontOK={},sel=0,drag=null;
+let S=loadState(),img=null,imgUrl="",imgSeq=0,fontOK={},sel=0,drag=null,panBg=false,showMore=false;
 const cv=document.getElementById("cv"),ctx=cv.getContext("2d");
 
 // ---------- Theme ----------
@@ -177,8 +233,7 @@ thBtn.onclick=()=>{
 // ---------- Undo / Redo + Auto-save ----------
 const hist=[];let hIdx=-1,hTimer=0;
 function snap(){
- const s=JSON.stringify(S);
- lsSet("doors_tc_state_v1",S);
+ const s=JSON.stringify(S);lsSet("doors_tc_state_v1",S);
  if(hist[hIdx]===s)return;
  hist.splice(hIdx+1);hist.push(s);if(hist.length>60)hist.shift();hIdx=hist.length-1;updUndo();
 }
@@ -187,7 +242,7 @@ function updUndo(){document.getElementById("undo").disabled=hIdx<=0;document.get
 function doUndo(d){
  const n=hIdx+d;if(n<0||n>=hist.length)return;
  hIdx=n;S=JSON.parse(hist[hIdx]);if(sel>=S.blocks.length)sel=Math.max(0,S.blocks.length-1);
- lsSet("doors_tc_state_v1",S);buildUI();draw();updUndo();
+ lsSet("doors_tc_state_v1",S);refreshActiveTab();draw();updUndo();
 }
 document.getElementById("undo").onclick=()=>doUndo(-1);
 document.getElementById("redo").onclick=()=>doUndo(1);
@@ -204,14 +259,17 @@ window.addEventListener("keydown",e=>{
  else if(e.key==="ArrowDown"){e.preventDefault();b.y+=step;syncBlockXY();draw();snapDeb()}
 });
 function syncBlockXY(){
- const card=P.querySelectorAll(".blk")[sel],b=S.blocks[sel];if(!card||!b)return;
- ["x","y"].forEach(k=>{card.querySelectorAll(`[data-k="${k}"]`).forEach(el=>el.value=b[k])});
+ const b=S.blocks[sel];if(!b)return;
+ ["x","y"].forEach(k=>tabPanes.text.querySelectorAll(`[data-k="${k}"]`).forEach(el=>el.value=b[k]));
+}
+function syncBgXY(){
+ ["bgX","bgY"].forEach(k=>tabPanes.bg.querySelectorAll(`[data-k="${k}"]`).forEach(el=>el.value=S[k]));
 }
 
 // ---------- Custom Color Picker ----------
 const CP_PAL=["#fbdcb4","#ffe9a6","#ffb35c","#e98a3c","#ff5a48","#ff1a0a","#9ff4ff","#00d0ff","#4ef2a1","#ffffff","#2a1306","#000000"];
 let cpRec=lsGet("doors_tc_rec_v1",["#fbdcb4","#ff5a48","#ffe9a6","#9ff4ff","#2a1306","#000000"]);
-const cpPop=document.getElementById("cp-pop"),cpSv=document.getElementById("cp-sv"),cpDot=document.getElementById("cp-dot"),cpHue=document.getElementById("cp-hue"),cpHthumb=document.getElementById("cp-hthumb"),cpPrev=document.getElementById("cp-prev"),cpHex=document.getElementById("cp-hex"),cpEye=document.getElementById("cp-eye");
+const cpBg=document.getElementById("cp-bg"),cpPop=document.getElementById("cp-pop"),cpSv=document.getElementById("cp-sv"),cpDot=document.getElementById("cp-dot"),cpHue=document.getElementById("cp-hue"),cpHthumb=document.getElementById("cp-hthumb"),cpPrev=document.getElementById("cp-prev"),cpHex=document.getElementById("cp-hex"),cpEye=document.getElementById("cp-eye");
 let cpCur={h:35,s:.28,v:.98,cb:null,btn:null,open:false};
 
 function normHex(v){v=String(v||"").trim();if(!v.startsWith("#"))v="#"+v;if(/^#[0-9a-f]{3}$/i.test(v))v="#"+v[1]+v[1]+v[2]+v[2]+v[3]+v[3];return /^#[0-9a-f]{6}$/i.test(v)?v.toLowerCase():null}
@@ -274,24 +332,29 @@ if("EyeDropper" in window){
 }
 function openColorPicker(btn,val,cb){
  cpCur.btn=btn;cpCur.cb=cb;cpCur.open=true;cpSetHex(val,false);
- cpPop.hidden=false;
- const r=btn.getBoundingClientRect(),pw=248,ph=cpPop.offsetHeight||280;
+ cpPop.hidden=false;cpBg.hidden=window.innerWidth>600;
+ const r=btn.getBoundingClientRect(),pw=254,ph=cpPop.offsetHeight||290;
  let left=r.left,top=r.bottom+6;
  if(left+pw>window.innerWidth-8)left=window.innerWidth-pw-8;
  if(left<8)left=8;
  if(top+ph>window.innerHeight-8)top=Math.max(8,r.top-ph-6);
  cpPop.style.left=left+"px";cpPop.style.top=top+"px";
 }
-function closeColorPicker(){if(!cpCur.open)return;cpPop.hidden=true;cpCur.open=false;cpCur.btn=null;cpCur.cb=null}
+function closeColorPicker(){if(!cpCur.open)return;cpPop.hidden=true;cpBg.hidden=true;cpCur.open=false;cpCur.btn=null;cpCur.cb=null}
+cpBg.addEventListener("pointerdown",closeColorPicker);
 document.addEventListener("pointerdown",e=>{if(cpCur.open&&!cpPop.contains(e.target)&&(!cpCur.btn||!cpCur.btn.contains(e.target)))closeColorPicker()});
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeColorPicker()});
 
-// ---------- Render ----------
+// ---------- Render & Caching ----------
 function rnd(i){const x=Math.sin(i*127.1+311.7)*43758.5453;return x-Math.floor(x)}
 async function ensureFont(f){if(fontOK[f])return;try{await document.fonts.load(`100px "${f}"`);}catch(e){}fontOK[f]=1}
 let pend=0;function draw(){if(pend)return;pend=requestAnimationFrame(()=>{pend=0;render(ctx,1,false)})}
+function fitCv(el,W,H){if(el.width!==W||el.height!==H){el.width=W;el.height=H}}
 
-function drawBg(c,k,W,H){
+const layer=document.createElement("canvas"),layer2=document.createElement("canvas"),bgLayer=document.createElement("canvas");
+let bgCacheKey="";
+
+function paintBg(c,k,W,H){
  c.save();
  if(img){
   const ir=img.width/img.height,cr=W/H,z=(S.bgZoom||100)/100;let w,h;
@@ -318,6 +381,14 @@ function drawBg(c,k,W,H){
  if(S.vig>0){const g=c.createRadialGradient(W/2,H/2,H*.3,W/2,H/2,W*.65);g.addColorStop(0,"rgba(0,0,0,0)");g.addColorStop(1,`rgba(0,0,0,${S.vig/100})`);c.fillStyle=g;c.fillRect(0,0,W,H)}
  c.restore();
 }
+function drawBg(c,k,W,H){
+ if(c!==ctx){paintBg(c,k,W,H);return}
+ const key=`${W}|${H}|${img?imgSeq:0}|${S.fit}|${S.bgZoom}|${S.bgX}|${S.bgY}|${S.bgA}|${S.bgB}|${S.bgAngle}|${S.lights}|${S.blur}|${S.bright}|${S.vig}|${S.tint}|${S.tintA}`;
+ if(key!==bgCacheKey||bgLayer.width!==W||bgLayer.height!==H){
+  fitCv(bgLayer,W,H);const bc=bgLayer.getContext("2d");bc.clearRect(0,0,W,H);paintBg(bc,k,W,H);bgCacheKey=key;
+ }
+ c.drawImage(bgLayer,0,0);
+}
 function layoutChars(c,bl,k,fn){
  const t=S.upper?bl.text.toUpperCase():bl.text;if(!t)return;
  const size=bl.size*k;c.font=`${size}px "${bl.font}", serif`;
@@ -340,18 +411,17 @@ function paintBlock(c,bl,k){
  layoutChars(c,bl,k,(ch,sz)=>{let f=bl.color;if(S.grad){const g=c.createLinearGradient(0,-sz*.4,0,sz*.4);g.addColorStop(0,bl.color);g.addColorStop(1,S.color2);f=g}c.fillStyle=f;c.fillText(ch,0,0)});
  c.restore();
 }
-const layer=document.createElement("canvas"),layer2=document.createElement("canvas");
 function render(c,k,transparent){
  const W=W0*k,H=H0*k;
- if(c.canvas.width!==W){c.canvas.width=W;c.canvas.height=H}
+ fitCv(c.canvas,W,H);
  c.clearRect(0,0,W,H);
  if(!transparent)drawBg(c,k,W,H);
- layer.width=W;layer.height=H;const L=layer.getContext("2d");
+ fitCv(layer,W,H);const L=layer.getContext("2d");L.clearRect(0,0,W,H);
  S.blocks.forEach(b=>{if(b.on)paintBlock(L,b,k)});
- const step=Math.max(2,Math.round(2*k));
+ const step=Math.max(2,Math.round((c===ctx&&drag?4:2)*k));
  let src=layer;
  if(S.perspV){
-  layer2.width=W;layer2.height=H;const L2=layer2.getContext("2d");
+  fitCv(layer2,W,H);const L2=layer2.getContext("2d");L2.clearRect(0,0,W,H);
   for(let y=0;y<H;y+=step){
    const sh=Math.min(step,H-y),v=(y+sh/2-H/2)/(H/2),sx=Math.max(.1,1+S.perspV/100*v);
    L2.drawImage(layer,0,y,W,sh,W/2-W*sx/2,y,W*sx,sh)}
@@ -372,7 +442,7 @@ function render(c,k,transparent){
    [H/3,H/2,H*2/3].forEach(y=>{c.beginPath();c.moveTo(0,y);c.lineTo(W,y);c.stroke()});
    c.restore();
   }
-  if(drag){
+  if(drag&&drag.type==="block"){
    const b=S.blocks[drag.i];
    if(b&&(b.x===0||b.y===0)){
     c.save();c.strokeStyle="rgba(255,210,140,.65)";c.lineWidth=2;c.setLineDash([8,8]);
@@ -384,10 +454,25 @@ function render(c,k,transparent){
  }
 }
 
-// ---------- UI ----------
-const P=document.getElementById("panel"),openState={tpl:true,text:true},blkOpen={};
-let customFonts=[];
-function sec(title,key){const d=document.createElement("details");d.open=!!openState[key];d.ontoggle=()=>{openState[key]=d.open};d.innerHTML=`<summary>${title}</summary>`;P.appendChild(d);return d}
+// ---------- UI Builders ----------
+const tabsEl=document.getElementById("tabs"),bodyEl=document.getElementById("tabbody");
+const TAB_DEF=[["text","Text"],["tpl","Templates"],["warp","Warp"],["style","Style"],["bg","Bg"],["exp","Export",true]];
+let curTab="text",customFonts=[];
+const tabBtns={},tabPanes={};
+
+TAB_DEF.forEach(([id,label,mob])=>{
+ const b=document.createElement("button");b.type="button";b.textContent=label;
+ if(mob)b.className="mob-only";
+ b.onclick=()=>setTab(id);tabsEl.appendChild(b);tabBtns[id]=b;
+ const p=document.createElement("div");p.className="tabpane";p.hidden=true;bodyEl.appendChild(p);tabPanes[id]=p;
+});
+function setTab(id){
+ curTab=id;closeColorPicker();
+ Object.entries(tabBtns).forEach(([k,b])=>b.classList.toggle("on",k===id));
+ Object.entries(tabPanes).forEach(([k,p])=>p.hidden=k!==id);
+ if(id!=="bg"&&panBg){panBg=false;renderBgTab()}
+}
+
 function sl(par,label,obj,key,min,max,step,def){
  const r=document.createElement("div");r.className="row";
  r.innerHTML=`<label title="Double-click to reset">${label}</label><input type="range" data-k="${key}" min="${min}" max="${max}" step="${step||1}"><input type="number" class="num" data-k="${key}" step="${step||1}">`;
@@ -398,71 +483,34 @@ function sl(par,label,obj,key,min,max,step,def){
  lb.ondblclick=()=>{const v=def!==undefined?def:BASE()[key];if(v!==undefined){obj[key]=v;i.value=v;n.value=v;draw();snap()}};
  par.appendChild(r);
 }
-function co(par,label,obj,key){
+function co(par,label,obj,key,quick){
  const r=document.createElement("div");r.className="row c";
- r.innerHTML=`<label>${label}</label><div><button type="button" class="cbtn"><i></i><span></span></button></div>`;
- const b=r.querySelector("button"),ic=b.querySelector("i"),sp=b.querySelector("span");
- ic.style.background=obj[key];sp.textContent=obj[key].toUpperCase();
+ r.innerHTML=`<label>${label}</label><div class="cwrap"><button type="button" class="cbtn"><i></i><span></span></button></div>`;
+ const wrap=r.querySelector(".cwrap"),b=r.querySelector("button"),ic=b.querySelector("i"),sp=b.querySelector("span");
+ const upd=hex=>{ic.style.background=hex;sp.textContent=hex.toUpperCase()};
+ upd(obj[key]);
  b.onclick=()=>openColorPicker(b,obj[key],hex=>{obj[key]=hex;draw()});
+ if(quick){
+  const q=document.createElement("div");q.className="qsw";
+  QUICK_COLS.forEach(c=>{const s=document.createElement("button");s.type="button";s.style.background=c;s.title=c;s.onclick=()=>{obj[key]=c;upd(c);draw();snap()};q.appendChild(s)});
+  wrap.appendChild(q);
+ }
  par.appendChild(r);
 }
 function ck(par,label,obj,key){
  const r=document.createElement("div");r.className="row c";r.innerHTML=`<label>${label}</label><div><input type="checkbox"></div>`;
  const i=r.querySelector("input");i.checked=obj[key];i.onchange=()=>{obj[key]=i.checked;draw();snap()};par.appendChild(r);
 }
-function resetBtn(par,keys,extra){
- const b=document.createElement("button");b.className="g sm";b.textContent="Reset this section";
- b.onclick=()=>{const d=BASE();keys.forEach(k=>S[k]=d[k]);if(extra)extra();buildUI();draw();snap()};par.appendChild(b);
+function resetBtn(par,keys,extra,redrawFn){
+ const b=document.createElement("button");b.className="g sm";b.textContent="Reset this tab";
+ b.onclick=()=>{const d=BASE();keys.forEach(k=>S[k]=d[k]);if(extra)extra();redrawFn();draw();snap()};par.appendChild(b);
 }
 
-function buildBlocks(box){
- box.innerHTML="";
- S.blocks.forEach((b,idx)=>{
-  const d=document.createElement("div");d.className="blk"+(idx===sel?" sel":"");
-  d.innerHTML=`<div class="top">
-   <input type="checkbox" title="Show / hide">
-   <input type="text" placeholder="Text">
-   <button class="g" data-a="cx" title="Center X">⌖</button>
-   <button class="g" data-a="up" title="Move up">▲</button>
-   <button class="g" data-a="dn" title="Move down">▼</button>
-   <button class="g" data-a="dup" title="Duplicate">⧉</button>
-   <button class="g" data-a="del" title="Delete">✕</button>
-  </div>
-  <div class="row c"><label>Font</label><select>${FONTS.map(f=>f[0]).concat(customFonts).map(f=>`<option value="${f}"${f===b.font?" selected":""}>${(FONTS.find(x=>x[0]===f)||[0,f+" (custom)"])[1]}</option>`).join("")}</select></div>`;
-  const vis=d.querySelector('input[type=checkbox]'),tx=d.querySelector('input[type=text]'),se=d.querySelector("select");
-  vis.checked=b.on;vis.onchange=()=>{b.on=vis.checked;draw();snap()};
-  tx.value=b.text;tx.oninput=()=>{b.text=tx.value;draw();snapDeb()};
-  d.addEventListener("pointerdown",()=>{if(sel!==idx){sel=idx;box.querySelectorAll(".blk").forEach((el,k)=>el.classList.toggle("sel",k===sel))}});
-  d.querySelector('[data-a=cx]').onclick=()=>{b.x=0;buildUI();draw();snap()};
-  d.querySelector('[data-a=up]').onclick=()=>{if(idx>0){[S.blocks[idx-1],S.blocks[idx]]=[S.blocks[idx],S.blocks[idx-1]];sel=idx-1;buildUI();draw();snap()}};
-  d.querySelector('[data-a=dn]').onclick=()=>{if(idx<S.blocks.length-1){[S.blocks[idx+1],S.blocks[idx]]=[S.blocks[idx],S.blocks[idx+1]];sel=idx+1;buildUI();draw();snap()}};
-  d.querySelector('[data-a=del]').onclick=()=>{S.blocks.splice(idx,1);sel=Math.max(0,Math.min(sel,S.blocks.length-1));buildUI();draw();snap()};
-  d.querySelector('[data-a=dup]').onclick=()=>{S.blocks.splice(idx+1,0,{...b,y:b.y+80});sel=idx+1;buildUI();draw();snap()};
-  se.onchange=async()=>{await ensureFont(se.value);b.font=se.value;draw();snap()};
-  sl(d,"Size",b,"size",20,800,1,150);
-  co(d,"Color",b,"color");
-  sl(d,"Position X",b,"x",-960,960,1,0);
-  sl(d,"Position Y",b,"y",-540,540,1,0);
-  sl(d,"Rotation °",b,"rot",-90,90,.5,0);
-  sl(d,"Letter spacing",b,"sp",-100,300,1,0);
-  const m=document.createElement("details");m.open=!!blkOpen[idx];m.ontoggle=()=>{blkOpen[idx]=m.open};
-  m.innerHTML="<summary style='font-weight:400;color:var(--mut)'>Outline, glow, width & opacity</summary>";
-  sl(m,"Letter width %",b,"sx",40,200,1,100);
-  sl(m,"Opacity %",b,"alpha",0,100,1,100);
-  sl(m,"Outline",b,"sw",0,60,1,0);co(m,"Outline color",b,"sc");
-  sl(m,"Glow",b,"glow",0,200,1,0);co(m,"Glow color",b,"gc");
-  d.appendChild(m);
-  box.appendChild(d)});
-}
-function applyTpl(o){
- S=Object.assign(BASE(),JSON.parse(JSON.stringify(o)));
- S.blocks=S.blocks.map(b=>B(b));sel=0;
- return Promise.all(S.blocks.map(b=>ensureFont(b.font))).then(()=>{buildUI();draw();snap()});
-}
-function buildUI(){
- const st=P.scrollTop;closeColorPicker();P.innerHTML="";
- // Templates
- const s0=sec("Templates","tpl");const g=document.createElement("div");g.className="tg";
+// 1. Templates Tab (only re-rendered when fonts load or custom templates change!)
+let tplGrid=null;
+function renderTplTab(){
+ const p=tabPanes.tpl;p.innerHTML="";
+ tplGrid=document.createElement("div");tplGrid.className="tg";
  const keep=S,keepImg=img;
  const addThumb=(name,o,customIdx)=>{
   const wrap=document.createElement("div");wrap.className="titem";
@@ -473,87 +521,197 @@ function buildUI(){
   wrap.appendChild(b);
   if(customIdx!==undefined){
    const del=document.createElement("button");del.className="tdel";del.textContent="✕";del.title="Delete template";
-   del.onclick=e=>{e.stopPropagation();customTpls.splice(customIdx,1);lsSet("doors_tc_tpls_v1",customTpls);buildUI()};
+   del.onclick=e=>{e.stopPropagation();customTpls.splice(customIdx,1);lsSet("doors_tc_tpls_v1",customTpls);renderTplTab()};
    wrap.appendChild(del);
   }
-  g.appendChild(wrap);
+  tplGrid.appendChild(wrap);
  };
  TPL.forEach(([name,o])=>addThumb(name,o));
  customTpls.forEach((t,i)=>addThumb(t.name,t.data,i));
- S=keep;img=keepImg;s0.appendChild(g);
+ S=keep;img=keepImg;p.appendChild(tplGrid);
  const sv=document.createElement("button");sv.className="g sm";sv.textContent="+ Save current as template";
  sv.onclick=()=>{
   const def=(S.blocks.find(b=>b.on)||{text:"Custom"}).text||"Custom";
   const name=prompt("Template name:",def);if(!name)return;
   customTpls.push({name:name.trim(),data:JSON.parse(JSON.stringify(S))});
-  lsSet("doors_tc_tpls_v1",customTpls);buildUI();msg("Template saved");
+  lsSet("doors_tc_tpls_v1",customTpls);renderTplTab();msg("Template saved");
  };
- s0.appendChild(sv);
+ p.appendChild(sv);
+}
+function applyTpl(o){
+ S=Object.assign(BASE(),JSON.parse(JSON.stringify(o)));
+ S.blocks=S.blocks.map(b=>B(b));sel=0;
+ return Promise.all(S.blocks.map(b=>ensureFont(b.font))).then(()=>{refreshActiveTab();draw();snap()});
+}
 
- // Text
- const s1=sec("Text","text");const box=document.createElement("div");s1.appendChild(box);buildBlocks(box);
- const ab=document.createElement("button");ab.className="g sm";ab.textContent="+ Add text";
- ab.onclick=()=>{S.blocks.push(B({text:"NEW TEXT",size:90,y:260}));sel=S.blocks.length-1;buildUI();draw();snap()};s1.appendChild(ab);
- const af=document.createElement("button");af.className="g sm";af.style.marginLeft="6px";af.textContent="Apply font to all";
- af.onclick=()=>{const b=S.blocks[sel]||S.blocks[0];if(!b)return;S.blocks.forEach(x=>x.font=b.font);buildUI();draw();snap();msg("Font applied to all blocks")};s1.appendChild(af);
- ck(s1,"UPPERCASE",S,"upper");
+// 2. Text Tab
+function renderTextTab(){
+ const p=tabPanes.text;p.innerHTML="";
+ const bar=document.createElement("div");bar.className="bbar";
+ S.blocks.forEach((b,idx)=>{
+  const chip=document.createElement("button");chip.type="button";
+  chip.className="bpill"+(idx===sel?" sel":"")+(b.on?"":" off");
+  chip.textContent=(b.on?"":"[hidden] ")+(b.text.trim()||`Line ${idx+1}`);
+  chip.onclick=()=>{sel=idx;renderTextTab()};
+  bar.appendChild(chip);
+ });
+ const add=document.createElement("button");add.type="button";add.className="g sm";add.style.margin="0";add.textContent="+ Add";
+ add.onclick=()=>{S.blocks.push(B({text:"NEW TEXT",size:90,y:260}));sel=S.blocks.length-1;renderTextTab();draw();snap()};
+ bar.appendChild(add);
+ p.appendChild(bar);
+
+ if(sel>=S.blocks.length)sel=Math.max(0,S.blocks.length-1);
+ const b=S.blocks[sel];
+ if(b){
+  const card=document.createElement("div");card.className="bcard";
+  const top=document.createElement("div");top.className="btop";
+  top.innerHTML=`<input type="checkbox" title="Show / hide"><input type="text" placeholder="Type text...">`;
+  const vis=top.querySelector('input[type=checkbox]'),tx=top.querySelector('input[type=text]');
+  vis.checked=b.on;vis.onchange=()=>{b.on=vis.checked;renderTextTab();draw();snap()};
+  tx.value=b.text;tx.oninput=()=>{b.text=tx.value;const pill=bar.children[sel];if(pill)pill.textContent=(b.on?"":"[hidden] ")+(b.text.trim()||`Line ${sel+1}`);draw();snapDeb()};
+  card.appendChild(top);
+
+  const acts=document.createElement("div");acts.className="bacts";
+  acts.innerHTML=`<button type="button" class="g" data-a="cx">Center X</button><button type="button" class="g" data-a="up" title="Move up">▲</button><button type="button" class="g" data-a="dn" title="Move down">▼</button><button type="button" class="g" data-a="dup">Duplicate</button><button type="button" class="g" data-a="del">Delete</button>`;
+  acts.querySelector('[data-a=cx]').onclick=()=>{b.x=0;renderTextTab();draw();snap()};
+  acts.querySelector('[data-a=up]').onclick=()=>{if(sel>0){[S.blocks[sel-1],S.blocks[sel]]=[S.blocks[sel],S.blocks[sel-1]];sel--;renderTextTab();draw();snap()}};
+  acts.querySelector('[data-a=dn]').onclick=()=>{if(sel<S.blocks.length-1){[S.blocks[sel+1],S.blocks[sel]]=[S.blocks[sel],S.blocks[sel+1]];sel++;renderTextTab();draw();snap()}};
+  acts.querySelector('[data-a=dup]').onclick=()=>{S.blocks.splice(sel+1,0,{...b,y:b.y+80});sel++;renderTextTab();draw();snap()};
+  acts.querySelector('[data-a=del]').onclick=()=>{S.blocks.splice(sel,1);sel=Math.max(0,Math.min(sel,S.blocks.length-1));renderTextTab();draw();snap()};
+  card.appendChild(acts);
+
+  const fg=document.createElement("div");fg.className="fgrid";
+  FONTS.map(f=>f[0]).concat(customFonts).forEach(fname=>{
+   const label=(FONTS.find(x=>x[0]===fname)||[0,fname])[1];
+   const fb=document.createElement("button");fb.type="button";fb.className=fname===b.font?"on":"";
+   fb.style.fontFamily=`"${fname}",serif`;fb.textContent=label;
+   fb.onclick=async()=>{await ensureFont(fname);b.font=fname;renderTextTab();draw();snap()};
+   fg.appendChild(fb);
+  });
+  card.appendChild(fg);
+
+  sl(card,"Size",b,"size",20,800,1,150);
+  co(card,"Color",b,"color",true);
+  sl(card,"Position X",b,"x",-960,960,1,0);
+  sl(card,"Position Y",b,"y",-540,540,1,0);
+  sl(card,"Rotation °",b,"rot",-90,90,.5,0);
+  sl(card,"Spacing",b,"sp",-100,300,1,0);
+
+  const more=document.createElement("details");more.open=showMore;more.ontoggle=()=>{showMore=more.open};
+  more.innerHTML="<summary style='font-weight:500;color:var(--mut)'>Outline, glow, width & opacity</summary>";
+  sl(more,"Width %",b,"sx",40,200,1,100);
+  sl(more,"Opacity %",b,"alpha",0,100,1,100);
+  sl(more,"Outline",b,"sw",0,60,1,0);co(more,"Outline color",b,"sc");
+  sl(more,"Glow",b,"glow",0,200,1,0);co(more,"Glow color",b,"gc");
+  card.appendChild(more);
+  p.appendChild(card);
+ }
+
+ const foot=document.createElement("div");foot.style.marginTop="10px";
+ const af=document.createElement("button");af.type="button";af.className="g sm";af.textContent="Apply font to all";
+ af.onclick=()=>{const x=S.blocks[sel]||S.blocks[0];if(!x)return;S.blocks.forEach(bl=>bl.font=x.font);draw();snap();msg("Font applied to all")};
+ foot.appendChild(af);
+ ck(foot,"UPPERCASE",S,"upper");
  const ff=document.createElement("div");ff.className="row c";ff.innerHTML=`<label>Custom font</label><div><input type="file" accept=".ttf,.otf,.woff,.woff2"></div>`;
  ff.querySelector("input").onchange=async e=>{
   const f=e.target.files[0];if(!f)return;
-  const name="Custom"+customFonts.length;const x=new FontFace(name,await f.arrayBuffer());await x.load();
+  const name="Custom"+(customFonts.length+1);const x=new FontFace(name,await f.arrayBuffer());await x.load();
   document.fonts.add(x);customFonts.push(name);fontOK[name]=1;
   if(S.blocks[sel])S.blocks[sel].font=name;
-  buildUI();draw();snap();msg("Font loaded and selected");
+  renderTextTab();draw();snap();msg("Font loaded");
  };
- s1.appendChild(ff);
+ foot.appendChild(ff);p.appendChild(foot);
+}
 
- // Style
- const s2=sec("Color effects and shadow","style");
- ck(s2,"Vertical gradient",S,"grad");co(s2,"Gradient end color",S,"color2");
- sl(s2,"Shadow opacity %",S,"shA",0,100);sl(s2,"Shadow X",S,"shX",-80,80);sl(s2,"Shadow Y",S,"shY",-80,80);sl(s2,"Shadow blur",S,"shB",0,100);co(s2,"Shadow color",S,"shC");
- resetBtn(s2,["grad","color2","shA","shX","shY","shB","shC"]);
-
- // Warp
- const s3=sec("Deformation","warp");
+// 3. Warp Tab
+function renderWarpTab(){
+ const p=tabPanes.warp;p.innerHTML="";
  const ch=document.createElement("div");ch.className="chips";
  WARP_PRESETS.forEach(([name,obj])=>{
   const b=document.createElement("button");b.className="g";b.type="button";b.textContent=name;
-  b.onclick=()=>{Object.assign(S,obj);buildUI();draw();snap()};ch.appendChild(b);
+  b.onclick=()=>{Object.assign(S,obj);renderWarpTab();draw();snap()};ch.appendChild(b);
  });
- s3.appendChild(ch);
- sl(s3,"Trapezoid (top/bot)",S,"perspV",-80,80);
- sl(s3,"Concave / Bulge",S,"pinch",-80,100);
- sl(s3,"Perspective (L/R)",S,"persp",-80,80);
- sl(s3,"Arch / Curve",S,"arch",-250,250);
- sl(s3,"Skew",S,"skew",-300,300);
- sl(s3,"Rotate everything °",S,"rotG",-45,45,.5);
- sl(s3,"Stretch X %",S,"stretch",40,200);
- sl(s3,"Stretch Y %",S,"stretchY",40,200);
- sl(s3,"Wave height",S,"wave",0,150);sl(s3,"Wave frequency",S,"freq",.25,10,.25);sl(s3,"Wave phase °",S,"phase",0,360);
- sl(s3,"Letter shake (px)",S,"jitter",0,100);sl(s3,"Letter tilt °",S,"jrot",0,45);sl(s3,"Shake seed",S,"seed",1,99);
- resetBtn(s3,["wave","freq","phase","skew","arch","persp","perspV","pinch","rotG","stretch","stretchY","jitter","jrot","seed"]);
-
- // BG
- const s4=sec("Background","bg");
- const pr=document.createElement("div");pr.className="row c";pr.innerHTML=`<label>Preset</label><select>${Object.entries(PRESETS).map(([k,v])=>`<option value="${k}"${k===S.preset?" selected":""}>${v[2]}</option>`).join("")}</select>`;
- pr.querySelector("select").onchange=e=>{const p=PRESETS[e.target.value];S.preset=e.target.value;S.bgA=p[0];S.bgB=p[1];buildUI();draw();snap()};s4.appendChild(pr);
- co(s4,"Color 1",S,"bgA");co(s4,"Color 2",S,"bgB");sl(s4,"Gradient angle °",S,"bgAngle",0,360);ck(s4,"Warm lights",S,"lights");
- const up=document.createElement("div");up.className="row c";up.innerHTML=`<label>Your image</label><div><input type="file" accept="image/*"></div>`;
- up.querySelector("input").onchange=e=>{const f=e.target.files[0];if(f)loadBgFile(f)};s4.appendChild(up);
- const fr=document.createElement("div");fr.className="row c";fr.innerHTML=`<label>Image fit</label><select><option value="cover">Fill</option><option value="contain">Fit</option><option value="stretch">Stretch</option></select>`;
- const fs=fr.querySelector("select");fs.value=S.fit;fs.onchange=()=>{S.fit=fs.value;draw();snap()};s4.appendChild(fr);
- sl(s4,"Image zoom %",S,"bgZoom",100,250);
- sl(s4,"Image X",S,"bgX",-960,960);
- sl(s4,"Image Y",S,"bgY",-540,540);
- const rb=document.createElement("button");rb.className="g sm";rb.textContent="Remove image";rb.onclick=()=>{img=null;draw()};s4.appendChild(rb);
- sl(s4,"Background blur",S,"blur",0,100);sl(s4,"Brightness %",S,"bright",10,130);sl(s4,"Vignette %",S,"vig",0,100);
- co(s4,"Tint color",S,"tint");sl(s4,"Tint strength %",S,"tintA",0,80);
- resetBtn(s4,["preset","bgA","bgB","bgAngle","lights","fit","bgZoom","bgX","bgY","blur","bright","vig","tint","tintA"],()=>{img=null});
- P.scrollTop=st;
+ p.appendChild(ch);
+ sl(p,"Trapezoid (top/bot)",S,"perspV",-80,80);
+ sl(p,"Concave / Bulge",S,"pinch",-80,100);
+ sl(p,"Perspective (L/R)",S,"persp",-80,80);
+ sl(p,"Arch / Curve",S,"arch",-250,250);
+ sl(p,"Skew",S,"skew",-300,300);
+ sl(p,"Rotate all °",S,"rotG",-45,45,.5);
+ sl(p,"Stretch X %",S,"stretch",40,200);
+ sl(p,"Stretch Y %",S,"stretchY",40,200);
+ sl(p,"Wave height",S,"wave",0,150);sl(p,"Wave freq",S,"freq",.25,10,.25);sl(p,"Wave phase °",S,"phase",0,360);
+ sl(p,"Letter shake",S,"jitter",0,100);sl(p,"Letter tilt °",S,"jrot",0,45);sl(p,"Shake seed",S,"seed",1,99);
+ resetBtn(p,["wave","freq","phase","skew","arch","persp","perspV","pinch","rotG","stretch","stretchY","jitter","jrot","seed"],null,renderWarpTab);
 }
 
+// 4. Style Tab
+function renderStyleTab(){
+ const p=tabPanes.style;p.innerHTML="";
+ ck(p,"Vertical gradient",S,"grad");co(p,"End color",S,"color2",true);
+ p.insertAdjacentHTML("beforeend",'<div class="sep"></div>');
+ sl(p,"Shadow opacity %",S,"shA",0,100);sl(p,"Shadow X",S,"shX",-80,80);sl(p,"Shadow Y",S,"shY",-80,80);sl(p,"Shadow blur",S,"shB",0,100);co(p,"Shadow color",S,"shC");
+ resetBtn(p,["grad","color2","shA","shX","shY","shB","shC"],null,renderStyleTab);
+}
+
+// 5. Background Tab
+function renderBgTab(){
+ const p=tabPanes.bg;p.innerHTML="";
+ const pr=document.createElement("div");pr.className="row c";pr.innerHTML=`<label>Preset</label><select>${Object.entries(PRESETS).map(([k,v])=>`<option value="${k}"${k===S.preset?" selected":""}>${v[2]}</option>`).join("")}</select>`;
+ pr.querySelector("select").onchange=e=>{const d=PRESETS[e.target.value];S.preset=e.target.value;S.bgA=d[0];S.bgB=d[1];renderBgTab();draw();snap()};p.appendChild(pr);
+ co(p,"Color 1",S,"bgA");co(p,"Color 2",S,"bgB");sl(p,"Gradient angle °",S,"bgAngle",0,360);ck(p,"Warm lights",S,"lights");
+ p.insertAdjacentHTML("beforeend",'<div class="sep"></div>');
+ const up=document.createElement("div");up.className="row c";up.innerHTML=`<label>Your image</label><div><input type="file" accept="image/*"></div>`;
+ up.querySelector("input").onchange=e=>{const f=e.target.files[0];if(f)loadBgFile(f)};p.appendChild(up);
+ if(img){
+  const fr=document.createElement("div");fr.className="row c";fr.innerHTML=`<label>Image fit</label><select><option value="cover">Fill</option><option value="contain">Fit</option><option value="stretch">Stretch</option></select>`;
+  const fs=fr.querySelector("select");fs.value=S.fit;fs.onchange=()=>{S.fit=fs.value;draw();snap()};p.appendChild(fr);
+  sl(p,"Image zoom %",S,"bgZoom",100,250);
+  sl(p,"Image X",S,"bgX",-960,960);
+  sl(p,"Image Y",S,"bgY",-540,540);
+  const acts=document.createElement("div");acts.className="chips";
+  const pb=document.createElement("button");pb.type="button";pb.className=panBg?"on":"g";pb.textContent=panBg?"Panning preview (ON)":"Pan image on preview";
+  pb.onclick=()=>{panBg=!panBg;cv.style.cursor=panBg?"grab":"move";renderBgTab()};
+  const rb=document.createElement("button");rb.type="button";rb.className="g";rb.textContent="Remove image";
+  rb.onclick=()=>{img=null;imgSeq++;panBg=false;cv.style.cursor="move";renderBgTab();draw()};
+  acts.appendChild(pb);acts.appendChild(rb);p.appendChild(acts);
+ }
+ p.insertAdjacentHTML("beforeend",'<div class="sep"></div>');
+ sl(p,"Blur",S,"blur",0,100);sl(p,"Brightness %",S,"bright",10,130);sl(p,"Vignette %",S,"vig",0,100);
+ co(p,"Tint color",S,"tint");sl(p,"Tint strength %",S,"tintA",0,80);
+ resetBtn(p,["preset","bgA","bgB","bgAngle","lights","fit","bgZoom","bgX","bgY","blur","bright","vig","tint","tintA"],()=>{img=null;imgSeq++;panBg=false;cv.style.cursor="move"},renderBgTab);
+}
+
+// 6. Mobile Export Tab
+function renderExpTab(){
+ const p=tabPanes.exp;p.innerHTML=`
+  <div class="row c"><label>Resolution</label><select id="m-scale"><option value="1">1920x1080 (1x)</option><option value="2" selected>3840x2160 (2x, 4K)</option><option value="3">5760x3240 (3x)</option></select></div>
+  <div class="row c"><label>Transparent</label><div><input type="checkbox" id="m-transp"></div></div>
+  <div class="row c"><label>Show guides</label><div><input type="checkbox" id="m-guides"></div></div>
+  <div class="chips" style="margin-top:12px">
+   <button type="button" id="m-exp">Download PNG</button>
+   <button type="button" class="g" id="m-cpy">Copy PNG</button>
+   <button type="button" class="g" id="m-rst">Reset all</button>
+  </div>
+  <div id="m-msg" class="hint"></div>`;
+ const sc=document.getElementById("scale"),tr=document.getElementById("transp"),gd=document.getElementById("guides");
+ const msc=p.querySelector("#m-scale"),mtr=p.querySelector("#m-transp"),mgd=p.querySelector("#m-guides");
+ msc.value=sc.value;mtr.checked=tr.checked;mgd.checked=gd.checked;
+ msc.onchange=()=>{sc.value=msc.value};mtr.onchange=()=>{tr.checked=mtr.checked};mgd.onchange=()=>{gd.checked=mgd.checked;draw()};
+ p.querySelector("#m-exp").onclick=()=>doExport();
+ p.querySelector("#m-cpy").onclick=()=>doCopy();
+ p.querySelector("#m-rst").onclick=()=>doResetAll();
+}
+
+function refreshActiveTab(){
+ renderTextTab();renderWarpTab();renderStyleTab();renderBgTab();renderExpTab();
+}
+
+// ---------- Image Drop / Paste ----------
 function loadBgFile(f){
- const im=new Image();im.onload=()=>{img=im;draw();msg("Background loaded")};im.src=URL.createObjectURL(f);
+ if(imgUrl)URL.revokeObjectURL(imgUrl);
+ imgUrl=URL.createObjectURL(f);
+ const im=new Image();im.onload=()=>{img=im;imgSeq++;renderBgTab();draw();msg("Background loaded")};im.src=imgUrl;
 }
 const dz=document.getElementById("dropzone");
 dz.addEventListener("dragover",e=>{e.preventDefault();dz.classList.add("drop")});
@@ -567,59 +725,90 @@ window.addEventListener("paste",e=>{
  if(it){const f=it.getAsFile();if(f)loadBgFile(f)}
 });
 
-function msg(t){const m=document.getElementById("msg");m.textContent=t;clearTimeout(msg.t);msg.t=setTimeout(()=>m.textContent="",5000)}
-document.getElementById("guides").onchange=()=>draw();
-document.getElementById("rst").onclick=()=>{S=BASE();img=null;sel=0;buildUI();draw();snap();msg("Reset")};
+// ---------- Actions ----------
+function msg(t){
+ ["msg","m-msg"].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=t});
+ clearTimeout(msg.t);msg.t=setTimeout(()=>["msg","m-msg"].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=""}),4500);
+}
+function doResetAll(){
+ S=BASE();img=null;imgSeq++;panBg=false;sel=0;cv.style.cursor="move";
+ refreshActiveTab();draw();snap();msg("Reset");
+}
+document.getElementById("guides").onchange=()=>{const mg=document.getElementById("m-guides");if(mg)mg.checked=document.getElementById("guides").checked;draw()};
+document.getElementById("rst").onclick=doResetAll;
 
+// ---------- Canvas Drag / Pick ----------
 function pickBlock(e){
  const r=cv.getBoundingClientRect(),px=(e.clientX-r.left)/r.width*W0-W0/2,py=(e.clientY-r.top)/r.height*H0-H0/2;
  let best=-1,bd=1e9;S.blocks.forEach((b,i)=>{if(!b.on)return;const d=Math.hypot(px-b.x,(py-b.y)*1.5);if(d<bd){bd=d;best=i}});
  return{best,px,py,r};
 }
 cv.addEventListener("pointerdown",e=>{
- const {best,px,py,r}=pickBlock(e);if(best<0)return;
- sel=best;drag={i:best,dx:px-S.blocks[best].x,dy:py-S.blocks[best].y,r};cv.setPointerCapture(e.pointerId);
+ const {best,px,py,r}=pickBlock(e);
+ if((panBg||e.altKey)&&img){
+  drag={type:"bg",sx:e.clientX,sy:e.clientY,ox:S.bgX||0,oy:S.bgY||0,r};
+  cv.setPointerCapture(e.pointerId);return;
+ }
+ if(best<0)return;
+ if(sel!==best){sel=best;if(curTab==="text")renderTextTab()}
+ drag={type:"block",i:best,dx:px-S.blocks[best].x,dy:py-S.blocks[best].y,r};
+ cv.setPointerCapture(e.pointerId);
 });
 cv.addEventListener("pointermove",e=>{
- if(!drag)return;const r=drag.r,b=S.blocks[drag.i];
+ if(!drag)return;const r=drag.r;
+ if(drag.type==="bg"){
+  S.bgX=Math.round(drag.ox+(e.clientX-drag.sx)/r.width*W0);
+  S.bgY=Math.round(drag.oy+(e.clientY-drag.sy)/r.height*H0);
+  syncBgXY();draw();return;
+ }
+ const b=S.blocks[drag.i];
  let nx=Math.round((e.clientX-r.left)/r.width*W0-W0/2-drag.dx);
  let ny=Math.round((e.clientY-r.top)/r.height*H0-H0/2-drag.dy);
  if(Math.abs(nx)<=14)nx=0;if(Math.abs(ny)<=14)ny=0;
- b.x=nx;b.y=ny;draw();
+ b.x=nx;b.y=ny;syncBlockXY();draw();
 });
-cv.addEventListener("pointerup",()=>{if(drag){drag=null;buildUI();draw();snap()}});
+cv.addEventListener("pointerup",()=>{if(drag){drag=null;draw();snap()}});
 cv.addEventListener("dblclick",e=>{
  const {best}=pickBlock(e);if(best<0)return;
- sel=best;openState.text=true;buildUI();
- const card=P.querySelectorAll(".blk")[sel];
- if(card){card.scrollIntoView({block:"nearest",behavior:"smooth"});const inp=card.querySelector('input[type="text"]');if(inp){inp.focus();inp.select()}}
+ sel=best;setTab("text");renderTextTab();
+ const inp=tabPanes.text.querySelector('.btop input[type="text"]');
+ if(inp){inp.focus();inp.select()}
 });
 
+// ---------- Export ----------
 async function makePngBlob(){
  const k=+document.getElementById("scale").value,tr=document.getElementById("transp").checked;
- const c=document.createElement("canvas");msg("Rendering...");await new Promise(r=>setTimeout(r,30));
+ const c=document.createElement("canvas");msg("Rendering...");await new Promise(r=>setTimeout(r,20));
  render(c.getContext("2d"),k,tr);
  return{blob:await new Promise(r=>c.toBlob(r,"image/png")),k};
 }
-document.getElementById("exp").onclick=async()=>{
+async function doExport(){
  const {blob,k}=await makePngBlob();
  const name=`title-${((S.blocks.find(b=>b.on)||{text:"card"}).text.replace(/\W+/g,"_"))||"card"}-${W0*k}x${H0*k}.png`;
  try{const dl=await claude.use("downloads");if(dl){await dl.save({filename:name,data:blob});msg("Done");return}}catch(e){if(e&&e.code==="declined"){msg("Cancelled");return}}
- const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();msg("Done");
-};
-document.getElementById("cpy").onclick=async()=>{
+ const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();
+ setTimeout(()=>URL.revokeObjectURL(a.href),1500);msg("Done");
+}
+async function doCopy(){
  if(!navigator.clipboard||!window.ClipboardItem){msg("Clipboard not supported - use Download PNG");return}
  try{
   const {blob}=await makePngBlob();
   await navigator.clipboard.write([new ClipboardItem({"image/png":blob})]);
   msg("Copied to clipboard");
  }catch(e){msg("Copy blocked by browser - use Download PNG")}
-};
+}
+document.getElementById("exp").onclick=doExport;
+document.getElementById("mob-exp").onclick=doExport;
+document.getElementById("cpy").onclick=doCopy;
 
-buildUI();draw();snap();
-ensureFont("DoorsCyr").then(()=>{buildUI();draw()});
-Promise.all(FONTS.map(f=>ensureFont(f[0]))).then(()=>{buildUI();draw()});
-document.fonts.ready.then(()=>{buildUI();draw()});
+setTab("text");
+renderTplTab();
+refreshActiveTab();
+draw();
+snap();
+ensureFont("DoorsCyr").then(()=>{renderTplTab();draw()});
+Promise.all(FONTS.map(f=>ensureFont(f[0]))).then(()=>{renderTplTab();draw()});
+document.fonts.ready.then(()=>{renderTplTab();draw()});
 </script>
 </body>
 </html>
