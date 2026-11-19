@@ -13,7 +13,7 @@
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-header{padding:12px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+header{padding:12px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 header h1{margin:0;font:400 26px "DoorsCyr",serif;letter-spacing:.04em}
 header span{color:var(--mut);font-size:13px;margin-right:auto}
 main{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:16px;padding:16px;align-items:start}
@@ -42,8 +42,11 @@ button.g:hover:not(:disabled){border-color:var(--acc)}
 .blk .top input[type=text]{flex:1;min-width:0;font-weight:600}
 .blk .top button{padding:5px 7px;font-size:12px;line-height:1}
 .tg{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:8px 0}
-.tg button{padding:0;background:var(--bg);border:2px solid var(--line);border-radius:8px;overflow:hidden;text-align:left;color:var(--fg)}
-.tg button:hover{border-color:var(--acc)}.tg canvas{cursor:pointer;touch-action:auto}.tg span{display:block;padding:4px 8px;font-size:12px}
+.tg .titem{position:relative}
+.tg button.tcard{width:100%;padding:0;background:var(--bg);border:2px solid var(--line);border-radius:8px;overflow:hidden;text-align:left;color:var(--fg);display:block}
+.tg button.tcard:hover{border-color:var(--acc)}.tg canvas{cursor:pointer;touch-action:auto}.tg span{display:block;padding:4px 8px;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tg button.tdel{position:absolute;top:4px;right:4px;padding:2px 6px;font-size:11px;background:rgba(0,0,0,.72);color:#fff;border-radius:5px}
+.tg button.tdel:hover{background:#c22}
 .chips{display:flex;flex-wrap:wrap;gap:5px;margin:6px 0 10px}
 .chips button{padding:4px 9px;font-size:12px;border-radius:6px}
 .sm{font-size:12px;padding:5px 10px;margin-top:6px}
@@ -80,15 +83,20 @@ button.g:hover:not(:disabled){border-color:var(--acc)}
  <span>title screen generator for your floors</span>
  <button class="g sm" id="undo" title="Undo (Ctrl+Z)" style="margin:0">↶ Undo</button>
  <button class="g sm" id="redo" title="Redo (Ctrl+Y)" style="margin:0">↷ Redo</button>
+ <button class="g sm" id="theme" title="Toggle light / dark theme" style="margin:0">☾</button>
 </header>
 <main>
  <div class="stage">
   <div class="cv" id="dropzone"><canvas id="cv" width="1920" height="1080"></canvas></div>
-  <div class="hint">Tip: drag text on the preview to move it (snaps to center). You can also drop a background image here. Double-click a label to reset.</div>
+  <div class="hint">Tip: drag text to move (snaps to center), arrow keys to nudge (Shift = 10px), double-click text to edit. Drop or Ctrl+V an image for background.</div>
   <div class="bar">
    <select id="scale" style="width:auto"><option value="1">1920x1080 (1x)</option><option value="2" selected>3840x2160 (2x, 4K)</option><option value="3">5760x3240 (3x)</option></select>
-   <label><input type="checkbox" id="transp"> transparent background (text only)</label>
-   <button id="exp">Download PNG</button><button class="g" id="rst">Reset all</button><span id="msg"></span>
+   <label><input type="checkbox" id="transp"> transparent background</label>
+   <label><input type="checkbox" id="guides"> guides</label>
+   <button id="exp">Download PNG</button>
+   <button class="g" id="cpy">Copy PNG</button>
+   <button class="g" id="rst">Reset all</button>
+   <span id="msg"></span>
   </div>
  </div>
  <div class="panel" id="panel"></div>
@@ -117,7 +125,7 @@ const BASE=()=>({
  upper:false,grad:false,color2:"#e98a3c",
  shX:10,shY:14,shB:0,shA:0,shC:"#000000",
  jitter:0,jrot:0,seed:1,wave:0,freq:2,phase:0,skew:0,arch:0,persp:-6,perspV:16,pinch:32,rotG:0,stretch:100,stretchY:100,
- preset:"hotel",bgA:"#3b1d0f",bgB:"#0d0604",bgAngle:162,lights:true,fit:"cover",bgZoom:100,blur:14,bright:70,vig:55,tint:"#6b2a10",tintA:0});
+ preset:"hotel",bgA:"#3b1d0f",bgB:"#0d0604",bgAngle:162,lights:true,fit:"cover",bgZoom:100,bgX:0,bgY:0,blur:14,bright:70,vig:55,tint:"#6b2a10",tintA:0});
 const TPL=[
  ["The Hotel",{}],
  ["Library",{blocks:[B({text:"THE",size:130,y:-185,rot:-2,color:"#f3e2b0",sp:20}),B({text:"LIBRARY",size:260,y:0,rot:-1.5,color:"#f3e2b0",sp:10,glow:30,gc:"#ffcf70"}),B({text:"FLOOR 1",size:70,y:230,color:"#c9a45c",sp:40})],preset:"gold",bgA:"#6b4a16",bgB:"#140c02",shA:70,shB:12}],
@@ -136,13 +144,41 @@ const WARP_PRESETS=[
  ["Horror Skew",{persp:16,perspV:18,pinch:25,arch:0,skew:35,jitter:10,jrot:4}]
 ];
 
-let S=BASE(),img=null,fontOK={},sel=1,drag=null;
+// ---------- Storage ----------
+const lsGet=(k,def)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):def}catch(e){return def}};
+const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+function loadState(){
+ const saved=lsGet("doors_tc_state_v1",null);
+ if(saved&&Array.isArray(saved.blocks)){
+  const s=Object.assign(BASE(),saved);
+  s.blocks=s.blocks.map(b=>B(b));
+  return s;
+ }
+ return BASE();
+}
+let customTpls=lsGet("doors_tc_tpls_v1",[]);
+
+let S=loadState(),img=null,fontOK={},sel=0,drag=null;
 const cv=document.getElementById("cv"),ctx=cv.getContext("2d");
 
-// ---------- Undo / Redo ----------
+// ---------- Theme ----------
+const thBtn=document.getElementById("theme");
+function setTheme(t){
+ if(t){document.documentElement.dataset.theme=t;lsSet("doors_tc_theme",t)}
+ const dark=document.documentElement.dataset.theme==="dark"||(!document.documentElement.dataset.theme&&matchMedia("(prefers-color-scheme:dark)").matches);
+ thBtn.textContent=dark?"☀":"☾";
+}
+setTheme(lsGet("doors_tc_theme",null));
+thBtn.onclick=()=>{
+ const dark=document.documentElement.dataset.theme==="dark"||(!document.documentElement.dataset.theme&&matchMedia("(prefers-color-scheme:dark)").matches);
+ setTheme(dark?"light":"dark");
+};
+
+// ---------- Undo / Redo + Auto-save ----------
 const hist=[];let hIdx=-1,hTimer=0;
 function snap(){
  const s=JSON.stringify(S);
+ lsSet("doors_tc_state_v1",S);
  if(hist[hIdx]===s)return;
  hist.splice(hIdx+1);hist.push(s);if(hist.length>60)hist.shift();hIdx=hist.length-1;updUndo();
 }
@@ -151,19 +187,30 @@ function updUndo(){document.getElementById("undo").disabled=hIdx<=0;document.get
 function doUndo(d){
  const n=hIdx+d;if(n<0||n>=hist.length)return;
  hIdx=n;S=JSON.parse(hist[hIdx]);if(sel>=S.blocks.length)sel=Math.max(0,S.blocks.length-1);
- buildUI();draw();updUndo();
+ lsSet("doors_tc_state_v1",S);buildUI();draw();updUndo();
 }
 document.getElementById("undo").onclick=()=>doUndo(-1);
 document.getElementById("redo").onclick=()=>doUndo(1);
+
 window.addEventListener("keydown",e=>{
  if(/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))return;
- if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="z"){e.preventDefault();doUndo(e.shiftKey?1:-1)}
- else if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="y"){e.preventDefault();doUndo(1)}
+ if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="z"){e.preventDefault();doUndo(e.shiftKey?1:-1);return}
+ if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="y"){e.preventDefault();doUndo(1);return}
+ const b=S.blocks[sel];if(!b)return;
+ const step=e.shiftKey?10:2;
+ if(e.key==="ArrowLeft"){e.preventDefault();b.x-=step;syncBlockXY();draw();snapDeb()}
+ else if(e.key==="ArrowRight"){e.preventDefault();b.x+=step;syncBlockXY();draw();snapDeb()}
+ else if(e.key==="ArrowUp"){e.preventDefault();b.y-=step;syncBlockXY();draw();snapDeb()}
+ else if(e.key==="ArrowDown"){e.preventDefault();b.y+=step;syncBlockXY();draw();snapDeb()}
 });
+function syncBlockXY(){
+ const card=P.querySelectorAll(".blk")[sel],b=S.blocks[sel];if(!card||!b)return;
+ ["x","y"].forEach(k=>{card.querySelectorAll(`[data-k="${k}"]`).forEach(el=>el.value=b[k])});
+}
 
 // ---------- Custom Color Picker ----------
 const CP_PAL=["#fbdcb4","#ffe9a6","#ffb35c","#e98a3c","#ff5a48","#ff1a0a","#9ff4ff","#00d0ff","#4ef2a1","#ffffff","#2a1306","#000000"];
-let cpRec=["#fbdcb4","#ff5a48","#ffe9a6","#9ff4ff","#2a1306","#000000"];
+let cpRec=lsGet("doors_tc_rec_v1",["#fbdcb4","#ff5a48","#ffe9a6","#9ff4ff","#2a1306","#000000"]);
 const cpPop=document.getElementById("cp-pop"),cpSv=document.getElementById("cp-sv"),cpDot=document.getElementById("cp-dot"),cpHue=document.getElementById("cp-hue"),cpHthumb=document.getElementById("cp-hthumb"),cpPrev=document.getElementById("cp-prev"),cpHex=document.getElementById("cp-hex"),cpEye=document.getElementById("cp-eye");
 let cpCur={h:35,s:.28,v:.98,cb:null,btn:null,open:false};
 
@@ -205,7 +252,8 @@ function cpRenderSwatches(box,arr){
 }
 function addRecent(hex){
  const n=normHex(hex);if(!n)return;
- cpRec=[n,...cpRec.filter(x=>x!==n)].slice(0,6);cpRenderSwatches(document.getElementById("cp-rec"),cpRec);
+ cpRec=[n,...cpRec.filter(x=>x!==n)].slice(0,6);lsSet("doors_tc_rec_v1",cpRec);
+ cpRenderSwatches(document.getElementById("cp-rec"),cpRec);
 }
 cpRenderSwatches(document.getElementById("cp-pal"),CP_PAL);
 cpRenderSwatches(document.getElementById("cp-rec"),cpRec);
@@ -251,10 +299,10 @@ function drawBg(c,k,W,H){
   else if(S.fit==="contain"){if(ir>cr){w=W;h=w/ir}else{h=H;w=h*ir}}
   else{w=W;h=H}
   w*=z;h*=z;
-  const m=S.fit==="cover"?S.blur*k*2:0;
+  const m=S.fit==="cover"?S.blur*k*2:0,ox=(S.bgX||0)*k,oy=(S.bgY||0)*k;
   c.fillStyle="#000";c.fillRect(0,0,W,H);
   if(S.blur>0)c.filter=`blur(${S.blur*k}px)`;
-  c.drawImage(img,(W-w)/2-m,(H-h)/2-m,w+m*2,h+m*2);c.filter="none";
+  c.drawImage(img,(W-w)/2-m+ox,(H-h)/2-m+oy,w+m*2,h+m*2);c.filter="none";
  }else{
   const a=((S.bgAngle??162)-90)*Math.PI/180,dx=Math.cos(a)*W*.6,dy=Math.sin(a)*H*.6;
   const g=c.createLinearGradient(W/2-dx,H/2-dy,W/2+dx,H/2+dy);g.addColorStop(0,S.bgA);g.addColorStop(1,S.bgB);c.fillStyle=g;c.fillRect(0,0,W,H);
@@ -317,24 +365,32 @@ function render(c,k,transparent){
   const dy=S.wave*k*Math.sin((x/W)*S.freq*Math.PI*2+S.phase*Math.PI/180)+S.skew*k*u+(S.arch||0)*k*(u*u-.25);
   c.drawImage(src,x,0,step+1,H,x,H/2-H*sy/2+dy,step+1,H*sy)}
  c.restore();
- if(c===ctx&&drag){
-  const b=S.blocks[drag.i];
-  if(b&&(b.x===0||b.y===0)){
-   c.save();c.strokeStyle="rgba(255,210,140,.55)";c.lineWidth=2;c.setLineDash([8,8]);
-   if(b.x===0){c.beginPath();c.moveTo(W/2,0);c.lineTo(W/2,H);c.stroke()}
-   if(b.y===0){c.beginPath();c.moveTo(0,H/2);c.lineTo(W,H/2);c.stroke()}
+ if(c===ctx){
+  if(document.getElementById("guides").checked){
+   c.save();c.strokeStyle="rgba(255,215,150,.22)";c.lineWidth=1.5;c.setLineDash([6,6]);
+   [W/3,W/2,W*2/3].forEach(x=>{c.beginPath();c.moveTo(x,0);c.lineTo(x,H);c.stroke()});
+   [H/3,H/2,H*2/3].forEach(y=>{c.beginPath();c.moveTo(0,y);c.lineTo(W,y);c.stroke()});
    c.restore();
+  }
+  if(drag){
+   const b=S.blocks[drag.i];
+   if(b&&(b.x===0||b.y===0)){
+    c.save();c.strokeStyle="rgba(255,210,140,.65)";c.lineWidth=2;c.setLineDash([8,8]);
+    if(b.x===0){c.beginPath();c.moveTo(W/2,0);c.lineTo(W/2,H);c.stroke()}
+    if(b.y===0){c.beginPath();c.moveTo(0,H/2);c.lineTo(W,H/2);c.stroke()}
+    c.restore();
+   }
   }
  }
 }
 
 // ---------- UI ----------
-const P=document.getElementById("panel"),openState={tpl:true,text:true};
+const P=document.getElementById("panel"),openState={tpl:true,text:true},blkOpen={};
 let customFonts=[];
 function sec(title,key){const d=document.createElement("details");d.open=!!openState[key];d.ontoggle=()=>{openState[key]=d.open};d.innerHTML=`<summary>${title}</summary>`;P.appendChild(d);return d}
 function sl(par,label,obj,key,min,max,step,def){
  const r=document.createElement("div");r.className="row";
- r.innerHTML=`<label title="Double-click to reset">${label}</label><input type="range" min="${min}" max="${max}" step="${step||1}"><input type="number" class="num" step="${step||1}">`;
+ r.innerHTML=`<label title="Double-click to reset">${label}</label><input type="range" data-k="${key}" min="${min}" max="${max}" step="${step||1}"><input type="number" class="num" data-k="${key}" step="${step||1}">`;
  const lb=r.querySelector("label"),i=r.querySelector("input[type=range]"),n=r.querySelector("input.num");
  i.value=obj[key];n.value=obj[key];
  i.oninput=()=>{obj[key]=+i.value;n.value=i.value;draw();snapDeb()};
@@ -389,7 +445,8 @@ function buildBlocks(box){
   sl(d,"Position Y",b,"y",-540,540,1,0);
   sl(d,"Rotation °",b,"rot",-90,90,.5,0);
   sl(d,"Letter spacing",b,"sp",-100,300,1,0);
-  const m=document.createElement("details");m.innerHTML="<summary style='font-weight:400;color:var(--mut)'>Outline, glow, width & opacity</summary>";
+  const m=document.createElement("details");m.open=!!blkOpen[idx];m.ontoggle=()=>{blkOpen[idx]=m.open};
+  m.innerHTML="<summary style='font-weight:400;color:var(--mut)'>Outline, glow, width & opacity</summary>";
   sl(m,"Letter width %",b,"sx",40,200,1,100);
   sl(m,"Opacity %",b,"alpha",0,100,1,100);
   sl(m,"Outline",b,"sw",0,60,1,0);co(m,"Outline color",b,"sc");
@@ -398,19 +455,41 @@ function buildBlocks(box){
   box.appendChild(d)});
 }
 function applyTpl(o){
- S=Object.assign(BASE(),JSON.parse(JSON.stringify(o)));sel=0;
+ S=Object.assign(BASE(),JSON.parse(JSON.stringify(o)));
+ S.blocks=S.blocks.map(b=>B(b));sel=0;
  return Promise.all(S.blocks.map(b=>ensureFont(b.font))).then(()=>{buildUI();draw();snap()});
 }
 function buildUI(){
- closeColorPicker();P.innerHTML="";
+ const st=P.scrollTop;closeColorPicker();P.innerHTML="";
  // Templates
  const s0=sec("Templates","tpl");const g=document.createElement("div");g.className="tg";
  const keep=S,keepImg=img;
- TPL.forEach(([name,o])=>{
-  const b=document.createElement("button");const c=document.createElement("canvas");c.width=288;c.height=162;
-  S=Object.assign(BASE(),JSON.parse(JSON.stringify(o)));img=null;render(c.getContext("2d"),288/W0,false);
-  b.appendChild(c);b.insertAdjacentHTML("beforeend",`<span>${name}</span>`);b.onclick=()=>applyTpl(o);g.appendChild(b)});
+ const addThumb=(name,o,customIdx)=>{
+  const wrap=document.createElement("div");wrap.className="titem";
+  const b=document.createElement("button");b.className="tcard";const c=document.createElement("canvas");c.width=288;c.height=162;
+  S=Object.assign(BASE(),JSON.parse(JSON.stringify(o)));S.blocks=S.blocks.map(x=>B(x));img=null;
+  render(c.getContext("2d"),288/W0,false);
+  b.appendChild(c);b.insertAdjacentHTML("beforeend",`<span>${name}</span>`);b.onclick=()=>applyTpl(o);
+  wrap.appendChild(b);
+  if(customIdx!==undefined){
+   const del=document.createElement("button");del.className="tdel";del.textContent="✕";del.title="Delete template";
+   del.onclick=e=>{e.stopPropagation();customTpls.splice(customIdx,1);lsSet("doors_tc_tpls_v1",customTpls);buildUI()};
+   wrap.appendChild(del);
+  }
+  g.appendChild(wrap);
+ };
+ TPL.forEach(([name,o])=>addThumb(name,o));
+ customTpls.forEach((t,i)=>addThumb(t.name,t.data,i));
  S=keep;img=keepImg;s0.appendChild(g);
+ const sv=document.createElement("button");sv.className="g sm";sv.textContent="+ Save current as template";
+ sv.onclick=()=>{
+  const def=(S.blocks.find(b=>b.on)||{text:"Custom"}).text||"Custom";
+  const name=prompt("Template name:",def);if(!name)return;
+  customTpls.push({name:name.trim(),data:JSON.parse(JSON.stringify(S))});
+  lsSet("doors_tc_tpls_v1",customTpls);buildUI();msg("Template saved");
+ };
+ s0.appendChild(sv);
+
  // Text
  const s1=sec("Text","text");const box=document.createElement("div");s1.appendChild(box);buildBlocks(box);
  const ab=document.createElement("button");ab.className="g sm";ab.textContent="+ Add text";
@@ -427,11 +506,13 @@ function buildUI(){
   buildUI();draw();snap();msg("Font loaded and selected");
  };
  s1.appendChild(ff);
+
  // Style
  const s2=sec("Color effects and shadow","style");
  ck(s2,"Vertical gradient",S,"grad");co(s2,"Gradient end color",S,"color2");
  sl(s2,"Shadow opacity %",S,"shA",0,100);sl(s2,"Shadow X",S,"shX",-80,80);sl(s2,"Shadow Y",S,"shY",-80,80);sl(s2,"Shadow blur",S,"shB",0,100);co(s2,"Shadow color",S,"shC");
  resetBtn(s2,["grad","color2","shA","shX","shY","shB","shC"]);
+
  // Warp
  const s3=sec("Deformation","warp");
  const ch=document.createElement("div");ch.className="chips";
@@ -451,6 +532,7 @@ function buildUI(){
  sl(s3,"Wave height",S,"wave",0,150);sl(s3,"Wave frequency",S,"freq",.25,10,.25);sl(s3,"Wave phase °",S,"phase",0,360);
  sl(s3,"Letter shake (px)",S,"jitter",0,100);sl(s3,"Letter tilt °",S,"jrot",0,45);sl(s3,"Shake seed",S,"seed",1,99);
  resetBtn(s3,["wave","freq","phase","skew","arch","persp","perspV","pinch","rotG","stretch","stretchY","jitter","jrot","seed"]);
+
  // BG
  const s4=sec("Background","bg");
  const pr=document.createElement("div");pr.className="row c";pr.innerHTML=`<label>Preset</label><select>${Object.entries(PRESETS).map(([k,v])=>`<option value="${k}"${k===S.preset?" selected":""}>${v[2]}</option>`).join("")}</select>`;
@@ -461,10 +543,13 @@ function buildUI(){
  const fr=document.createElement("div");fr.className="row c";fr.innerHTML=`<label>Image fit</label><select><option value="cover">Fill</option><option value="contain">Fit</option><option value="stretch">Stretch</option></select>`;
  const fs=fr.querySelector("select");fs.value=S.fit;fs.onchange=()=>{S.fit=fs.value;draw();snap()};s4.appendChild(fr);
  sl(s4,"Image zoom %",S,"bgZoom",100,250);
+ sl(s4,"Image X",S,"bgX",-960,960);
+ sl(s4,"Image Y",S,"bgY",-540,540);
  const rb=document.createElement("button");rb.className="g sm";rb.textContent="Remove image";rb.onclick=()=>{img=null;draw()};s4.appendChild(rb);
  sl(s4,"Background blur",S,"blur",0,100);sl(s4,"Brightness %",S,"bright",10,130);sl(s4,"Vignette %",S,"vig",0,100);
  co(s4,"Tint color",S,"tint");sl(s4,"Tint strength %",S,"tintA",0,80);
- resetBtn(s4,["preset","bgA","bgB","bgAngle","lights","fit","bgZoom","blur","bright","vig","tint","tintA"],()=>{img=null});
+ resetBtn(s4,["preset","bgA","bgB","bgAngle","lights","fit","bgZoom","bgX","bgY","blur","bright","vig","tint","tintA"],()=>{img=null});
+ P.scrollTop=st;
 }
 
 function loadBgFile(f){
@@ -477,15 +562,23 @@ dz.addEventListener("drop",e=>{
  e.preventDefault();dz.classList.remove("drop");
  const f=[...e.dataTransfer.files].find(x=>x.type.startsWith("image/"));if(f)loadBgFile(f);
 });
+window.addEventListener("paste",e=>{
+ const it=[...(e.clipboardData?.items||[])].find(x=>x.type.startsWith("image/"));
+ if(it){const f=it.getAsFile();if(f)loadBgFile(f)}
+});
 
 function msg(t){const m=document.getElementById("msg");m.textContent=t;clearTimeout(msg.t);msg.t=setTimeout(()=>m.textContent="",5000)}
-document.getElementById("rst").onclick=()=>{S=BASE();img=null;sel=1;buildUI();draw();snap();msg("Reset")};
+document.getElementById("guides").onchange=()=>draw();
+document.getElementById("rst").onclick=()=>{S=BASE();img=null;sel=0;buildUI();draw();snap();msg("Reset")};
 
-// drag text on preview with center snap
-cv.addEventListener("pointerdown",e=>{
+function pickBlock(e){
  const r=cv.getBoundingClientRect(),px=(e.clientX-r.left)/r.width*W0-W0/2,py=(e.clientY-r.top)/r.height*H0-H0/2;
  let best=-1,bd=1e9;S.blocks.forEach((b,i)=>{if(!b.on)return;const d=Math.hypot(px-b.x,(py-b.y)*1.5);if(d<bd){bd=d;best=i}});
- if(best<0)return;sel=best;drag={i:best,dx:px-S.blocks[best].x,dy:py-S.blocks[best].y,r};cv.setPointerCapture(e.pointerId);
+ return{best,px,py,r};
+}
+cv.addEventListener("pointerdown",e=>{
+ const {best,px,py,r}=pickBlock(e);if(best<0)return;
+ sel=best;drag={i:best,dx:px-S.blocks[best].x,dy:py-S.blocks[best].y,r};cv.setPointerCapture(e.pointerId);
 });
 cv.addEventListener("pointermove",e=>{
  if(!drag)return;const r=drag.r,b=S.blocks[drag.i];
@@ -495,15 +588,32 @@ cv.addEventListener("pointermove",e=>{
  b.x=nx;b.y=ny;draw();
 });
 cv.addEventListener("pointerup",()=>{if(drag){drag=null;buildUI();draw();snap()}});
+cv.addEventListener("dblclick",e=>{
+ const {best}=pickBlock(e);if(best<0)return;
+ sel=best;openState.text=true;buildUI();
+ const card=P.querySelectorAll(".blk")[sel];
+ if(card){card.scrollIntoView({block:"nearest",behavior:"smooth"});const inp=card.querySelector('input[type="text"]');if(inp){inp.focus();inp.select()}}
+});
 
-document.getElementById("exp").onclick=async()=>{
+async function makePngBlob(){
  const k=+document.getElementById("scale").value,tr=document.getElementById("transp").checked;
  const c=document.createElement("canvas");msg("Rendering...");await new Promise(r=>setTimeout(r,30));
  render(c.getContext("2d"),k,tr);
- const blob=await new Promise(r=>c.toBlob(r,"image/png"));
+ return{blob:await new Promise(r=>c.toBlob(r,"image/png")),k};
+}
+document.getElementById("exp").onclick=async()=>{
+ const {blob,k}=await makePngBlob();
  const name=`title-${((S.blocks.find(b=>b.on)||{text:"card"}).text.replace(/\W+/g,"_"))||"card"}-${W0*k}x${H0*k}.png`;
  try{const dl=await claude.use("downloads");if(dl){await dl.save({filename:name,data:blob});msg("Done");return}}catch(e){if(e&&e.code==="declined"){msg("Cancelled");return}}
  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();msg("Done");
+};
+document.getElementById("cpy").onclick=async()=>{
+ if(!navigator.clipboard||!window.ClipboardItem){msg("Clipboard not supported - use Download PNG");return}
+ try{
+  const {blob}=await makePngBlob();
+  await navigator.clipboard.write([new ClipboardItem({"image/png":blob})]);
+  msg("Copied to clipboard");
+ }catch(e){msg("Copy blocked by browser - use Download PNG")}
 };
 
 buildUI();draw();snap();
